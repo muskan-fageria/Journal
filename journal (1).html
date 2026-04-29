@@ -9,6 +9,7 @@
 </head>
 <body>
 
+
 <nav>
   <div class="nav-inner">
     <div class="nav-brand">my <span>journal</span> ✦</div>
@@ -85,9 +86,9 @@
       <div class="form-group" style="margin-top:0.75rem">
         <span class="form-label">Energy, Focus & Stress</span>
         <div class="slider-wrap">
-          <div class="slider-row"><span class="slider-label">⚡ Energy</span><input type="range" min="0" max="10" value="5" id="energy-slider" oninput="updateSlider('energy-slider','energy-val','energy')"><span class="slider-val" id="energy-val">5</span></div>
-          <div class="slider-row"><span class="slider-label">🎯 Focus</span><input type="range" min="0" max="10" value="5" id="focus-slider" oninput="updateSlider('focus-slider','focus-val','focus')"><span class="slider-val" id="focus-val">5</span></div>
-          <div class="slider-row"><span class="slider-label">😤 Stress</span><input type="range" min="0" max="10" value="3" id="stress-slider" oninput="updateSlider('stress-slider','stress-val','stress')"><span class="slider-val" id="stress-val">3</span></div>
+          <div class="slider-row"><span class="slider-label">⚡ Energy</span><input type="range" min="0" max="10" value="0" id="energy-slider" oninput="updateSlider('energy-slider','energy-val','energy')"><span class="slider-val" id="energy-val">0</span></div>
+          <div class="slider-row"><span class="slider-label">🎯 Focus</span><input type="range" min="0" max="10" value="0" id="focus-slider" oninput="updateSlider('focus-slider','focus-val','focus')"><span class="slider-val" id="focus-val">0</span></div>
+          <div class="slider-row"><span class="slider-label">😤 Stress</span><input type="range" min="0" max="10" value="0" id="stress-slider" oninput="updateSlider('stress-slider','stress-val','stress')"><span class="slider-val" id="stress-val">0</span></div>
         </div>
       </div>
     </div>
@@ -323,6 +324,7 @@
 </main>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="journal.js"></script>
 </body>
 </html>
