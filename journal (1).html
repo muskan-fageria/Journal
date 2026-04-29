@@ -15,10 +15,8 @@
     <div class="nav-brand">my <span>journal</span> ✦</div>
     <ul class="nav-tabs">
       <li><button class="active" onclick="showPage('today',this)">Today</button></li>
-      <li><button onclick="showPage('tasks',this)">Tasks</button></li>
-      <li><button onclick="showPage('projects',this)">Projects</button></li>
-      <li><button onclick="showPage('events',this)">Events</button></li>
-      <li><button onclick="showPage('social',this)">Social & Screen</button></li>
+      <li><button onclick="showPage('tasks',this)">Task</button></li>
+      <li><button onclick="showPage('events',this)">Memory Tracker</button></li>
       <li><button onclick="showPage('log',this)">Log</button></li>
     </ul>
     <div class="nav-date" id="nav-date-display"></div>
@@ -214,9 +212,9 @@
   </div>
 </div>
 
-<!-- EVENTS -->
+<!-- EVENTS (Memory Tracker) -->
 <div id="page-events" class="page">
-  <div class="section-header"><h1>Events</h1><span class="sub">moments worth remembering</span></div>
+  <div class="section-header"><h1>Memory Tracker</h1><span class="sub">moments worth remembering</span></div>
   <div class="card" style="margin-bottom:1.25rem">
     <div class="card-title">📊 Events by Category</div>
     <div id="events-chart-wrap" style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;padding:0.5rem 0;min-height:90px"><div style="font-size:0.82rem;color:var(--text-faint);font-style:italic">No events yet.</div></div>
