@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Syllable - Digital Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Newsreader:ital,wght@0,300;0,400;1,400&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1b1c1c",
+                        "secondary-fixed-dim": "#e6c183",
+                        "on-primary-fixed": "#131e16",
+                        "surface-tint": "#bdcabe",
+                        "surface-dim": "#131313",
+                        "on-secondary": "#422d00",
+                        "on-primary": "#28332b",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "secondary-container": "#5e4513",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-primary": "#556157",
+                        "tertiary-fixed-dim": "#b6ccb5",
+                        "on-tertiary-fixed": "#0e1f10",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#bdcabe",
+                        "tertiary-container": "#152717",
+                        "secondary": "#e6c183",
+                        "surface-variant": "#353535",
+                        "on-tertiary": "#223524",
+                        "outline-variant": "#434843",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "on-surface-variant": "#c4c8c2",
+                        "surface-container-highest": "#353535",
+                        "surface-bright": "#393939",
+                        "primary-fixed": "#d9e6d9",
+                        "on-error": "#690005",
+                        "surface": "#131313",
+                        "secondary-fixed": "#ffdea8",
+                        "primary-container": "#1b261e",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#3e4a40",
+                        "tertiary": "#b6ccb5",
+                        "on-surface": "#e5e2e1",
+                        "inverse-on-surface": "#303030",
+                        "on-primary-container": "#818e83",
+                        "on-secondary-fixed": "#271900",
+                        "tertiary-fixed": "#d2e9d0",
+                        "on-tertiary-fixed-variant": "#384b39",
+                        "on-secondary-container": "#d7b377",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-container": "#7b907a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline": "#8d928c",
+                        "surface-container": "#1f2020",
+                        "primary-fixed-dim": "#bdcabe"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "margin-page": "40px",
+                        "unit": "8px",
+                        "section-gap": "80px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Newsreader"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Newsreader"],
+                        "h2": ["Newsreader"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "h3": ["24px", { lineHeight: "1.4", fontWeight: "400" }],
+                        "label-caps": ["12px", { lineHeight: "1.2", letterSpacing: "0.1em", fontWeight: "600" }],
+                        "h1": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "300" }],
+                        "h2": ["32px", { lineHeight: "1.3", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased selection:bg-secondary selection:text-on-secondary">
+<div class="fixed inset-0 z-[-1]">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center" data-alt="deep moody pine forest enveloped in morning mist with subtle hints of dawn light filtering through towering trees"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
+</div>
+<nav class="hidden md:flex flex-col py-8 gap-12 fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50">
+<div class="px-8 flex flex-col gap-2">
+<span class="font-newsreader text-xl text-stone-100">Syllable</span>
+<span class="font-sans text-xs tracking-widest uppercase text-stone-500">Digital Sanctuary</span>
+</div>
+<div class="flex flex-col gap-4 flex-grow">
+<a class="flex items-center gap-4 text-amber-200 border-l-2 border-amber-200/50 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-4 text-stone-500 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+                Archive
+            </a>
+<a class="flex items-center gap-4 text-stone-500 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">insights</span>
+                Insights
+            </a>
+</div>
+<div class="px-8 mt-auto">
+<button class="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-full py-3 hover:bg-white/10 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase text-stone-200">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                Compose
+            </button>
+</div>
+</nav>
+<main class="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap">
+<header class="max-w-4xl pt-12 md:pt-24">
+<h1 class="font-h1 text-h1 text-on-surface mb-6">Good morning, Julian.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">The air is crisp and the world is still. Take a breath before you begin.</p>
+</header>
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<div class="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 flex flex-col justify-between min-h-[360px] group hover:border-secondary/50 hover:shadow-[0_12px_24px_rgba(0,0,0,0.3)] transition-all duration-500 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+<div class="relative z-10">
+<span class="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest">Today's Reflection</span>
+<h2 class="font-h2 text-h2 text-on-surface max-w-xl leading-snug">What subtle detail of the natural world caught your attention today?</h2>
+</div>
+<div class="relative z-10 mt-12 flex items-center gap-6">
+<button class="bg-white/10 backdrop-blur-md border border-white/20 text-secondary font-label-caps text-label-caps px-8 py-3 rounded-full hover:bg-white/20 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+                        Begin
+                    </button>
+<button class="text-on-surface-variant font-label-caps text-label-caps hover:text-secondary transition-colors uppercase tracking-widest">
+                        Shuffle Prompt
+                    </button>
+</div>
+</div>
+<div class="lg:col-span-4 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-8 flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-8 block tracking-widest uppercase">Rhythms</span>
+<div class="flex flex-col gap-8 flex-grow justify-center">
+<div class="flex items-center gap-6 group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-secondary bg-secondary/10 flex items-center justify-center transition-colors shadow-[0_0_12px_rgba(230,193,131,0.2)]">
+<span class="material-symbols-outlined text-[16px] text-secondary">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant line-through opacity-70">Morning Stillness</span>
+</div>
+<div class="flex items-center gap-6 group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-secondary flex items-center justify-center group-hover:bg-secondary/5 transition-colors relative">
+<svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/30" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--tw-colors-secondary)" stroke-dasharray="100, 100" stroke-dashoffset="60" stroke-width="1.5"></path>
+</svg>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-secondary transition-colors">Read Philosophy</span>
+</div>
+<div class="flex items-center gap-6 group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Evening Reflection</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+<div class="flex-shrink-0 text-center lg:text-left">
+<span class="font-label-caps text-label-caps text-secondary mb-3 block tracking-widest uppercase">Current State</span>
+<h3 class="font-h3 text-h3 text-on-surface">How does your spirit feel?</h3>
+</div>
+<div class="flex flex-wrap justify-center lg:justify-end gap-4 w-full">
+<button class="flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">water_drop</span>
+<span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Flowing</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-5 rounded-xl border border-secondary/30 bg-secondary/5 transition-all group/mood w-28 shadow-[0_0_20px_rgba(230,193,131,0.1)]">
+<span class="material-symbols-outlined text-4xl text-secondary transition-colors" style="font-variation-settings: 'FILL' 1, 'wght' 200;">air</span>
+<span class="font-label-caps text-[11px] tracking-widest text-secondary uppercase">Light</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">cloud</span>
+<span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Heavy</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">local_fire_department</span>
+<span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Restless</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">spa</span>
+<span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Centered</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Added Tracking Section -->
+<section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Health Metrics -->
+<div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Vitality</span>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[18px]">directions_walk</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Steps</span>
+</div>
+<span class="font-h3 text-xl text-on-surface">8,432</span>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+<div class="bg-secondary w-[80%] h-full rounded-full"></div>
+</div>
+</div>
+<div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+<div class="flex items-center gap-2 text-blue-300">
+<span class="material-symbols-outlined text-[18px]">water_drop</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Water</span>
+</div>
+<span class="font-h3 text-xl text-on-surface">1.2L</span>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+<div class="bg-blue-300 w-[60%] h-full rounded-full"></div>
+</div>
+</div>
+<div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+<div class="flex items-center gap-2 text-purple-300">
+<span class="material-symbols-outlined text-[18px]">bedtime</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Sleep</span>
+</div>
+<span class="font-h3 text-xl text-on-surface">7h 15m</span>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+<div class="bg-purple-300 w-[90%] h-full rounded-full"></div>
+</div>
+</div>
+<div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+<div class="flex items-center gap-2 text-green-300">
+<span class="material-symbols-outlined text-[18px]">fitness_center</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Exercise</span>
+</div>
+<span class="font-h3 text-xl text-on-surface">45m</span>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+<div class="bg-green-300 w-[100%] h-full rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Streaks & Progress -->
+<div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Consistency</span>
+<div class="flex items-center justify-center flex-col gap-2">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--tw-colors-secondary)" stroke-dasharray="100, 100" stroke-dashoffset="25" stroke-width="2"></path>
+</svg>
+<div class="flex flex-col items-center text-center">
+<span class="font-h2 text-3xl text-on-surface">12</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-end border-t border-white/10 pt-4">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Mindfulness</span>
+<span class="font-body-md text-on-surface">120 Minutes</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Goal</span>
+<span class="font-body-md text-on-surface-variant">150 Minutes</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Digital Wellbeing -->
+<div class="lg:col-span-4 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Digital Space</span>
+<span class="text-xs text-on-surface-variant">2h 15m Total</span>
+</div>
+<div class="flex flex-col gap-4 flex-grow">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+<span class="material-symbols-outlined text-[16px]">photo_camera</span>
+</div>
+<div class="flex-grow flex flex-col">
+<div class="flex justify-between items-center mb-1">
+<span class="font-body-md text-sm text-on-surface">Instagram</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">45m</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-pink-400/70 w-[60%] h-full rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+<span class="material-symbols-outlined text-[16px]">forum</span>
+</div>
+<div class="flex-grow flex flex-col">
+<div class="flex justify-between items-center mb-1">
+<span class="font-body-md text-sm text-on-surface">Slack</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">1h 10m</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-blue-400/70 w-[85%] h-full rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+</div>
+<div class="flex-grow flex flex-col">
+<div class="flex justify-between items-center mb-1">
+<span class="font-body-md text-sm text-on-surface">Books</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">20m</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-400/70 w-[25%] h-full rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-white/5">
+<div class="bg-white/5 rounded-lg p-3 text-center cursor-pointer hover:bg-white/10 transition-colors">
+<span class="font-label-caps text-xs text-secondary uppercase tracking-widest">Remarks, Gratitude, A Word</span>
+<p class="font-h3 text-on-surface mt-2 text-sm italic opacity-70">Capture a fleeting thought...</p>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-8 mt-8">
+<div class="flex items-end justify-between">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Reflections</h3>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors uppercase tracking-widest border-b border-transparent hover:border-secondary pb-1" href="#">View Archive</a>
+</div>
+<div class="flex gap-gutter overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar -mx-margin-page px-margin-page lg:-mx-section-gap lg:px-section-gap">
+<article class="snap-start shrink-0 w-[280px] sm:w-[360px] flex flex-col gap-6 group cursor-pointer">
+<div class="h-[240px] rounded-xl overflow-hidden relative border border-outline-variant/20">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1505322022379-7c3353ee6291?q=80&amp;w=2000&amp;auto=format&amp;fit=crop')] bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" data-alt="close up of morning dew on dark green fern leaves with soft focused background"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/20 to-transparent"></div>
+</div>
+<div class="px-2">
+<span class="font-label-caps text-label-caps text-secondary mb-3 block tracking-widest uppercase">Oct 24 • Clarity</span>
+<h4 class="font-h3 text-h3 text-on-surface group-hover:text-secondary transition-colors line-clamp-2">The quiet persistence of water shaping stone over time.</h4>
+</div>
+</article>
+<article class="snap-start shrink-0 w-[280px] sm:w-[360px] flex flex-col gap-6 group cursor-pointer">
+<div class="h-[240px] rounded-xl overflow-hidden relative border border-outline-variant/20">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1476820865390-c52aeebb9891?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" data-alt="minimalist landscape of rolling hills silhouetted against a muted gray twilight sky"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/20 to-transparent"></div>
+</div>
+<div class="px-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-secondary transition-colors mb-3 block tracking-widest uppercase">Oct 22 • Surrender</span>
+<h4 class="font-h3 text-h3 text-on-surface group-hover:text-secondary transition-colors line-clamp-2">Letting go of the need to arrive, finding peace in the transit.</h4>
+</div>
+</article>
+<article class="snap-start shrink-0 w-[280px] sm:w-[360px] flex flex-col gap-6 group cursor-pointer">
+<div class="h-[240px] rounded-xl overflow-hidden relative border border-outline-variant/20">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&amp;w=1888&amp;auto=format&amp;fit=crop')] bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" data-alt="abstract close up of dark textured tree bark with subtle shadows"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/20 to-transparent"></div>
+</div>
+<div class="px-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-secondary transition-colors mb-3 block tracking-widest uppercase">Oct 19 • Resilience</span>
+<h4 class="font-h3 text-h3 text-on-surface group-hover:text-secondary transition-colors line-clamp-2">Roots dig deeper when the winds blow cold.</h4>
+</div>
+</article>
+<div class="snap-start shrink-0 w-[40px] sm:w-[100px]"></div>
+</div>
+</section>
+</main>
+</body></html>

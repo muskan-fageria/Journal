@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aura - Memory Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#0e1f10",
+                      "surface-container-high": "#2a2a2a",
+                      "secondary-container": "#5e4513",
+                      "on-primary-fixed": "#131e16",
+                      "on-surface-variant": "#c4c8c2",
+                      "secondary-fixed": "#ffdea8",
+                      "on-surface": "#e5e2e1",
+                      "primary-container": "#1b261e",
+                      "primary": "#bdcabe",
+                      "on-secondary-fixed-variant": "#5b4311",
+                      "tertiary-fixed-dim": "#b6ccb5",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-container-highest": "#353535",
+                      "on-secondary-fixed": "#271900",
+                      "on-error": "#690005",
+                      "secondary-fixed-dim": "#e6c183",
+                      "on-secondary": "#422d00",
+                      "on-background": "#e5e2e1",
+                      "on-primary-container": "#818e83",
+                      "tertiary-container": "#152717",
+                      "inverse-surface": "#e5e2e1",
+                      "error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#384b39",
+                      "tertiary-fixed": "#d2e9d0",
+                      "on-tertiary-container": "#7b907a",
+                      "on-tertiary": "#223524",
+                      "background": "#131313",
+                      "surface-dim": "#131313",
+                      "surface-container": "#1f2020",
+                      "inverse-on-surface": "#303030",
+                      "error": "#ffb4ab",
+                      "primary-fixed-dim": "#bdcabe",
+                      "outline-variant": "#434843",
+                      "on-primary": "#28332b",
+                      "surface": "#131313",
+                      "secondary": "#e6c183",
+                      "on-error-container": "#ffdad6",
+                      "surface-tint": "#bdcabe",
+                      "surface-container-low": "#1b1c1c",
+                      "on-secondary-container": "#d7b377",
+                      "surface-variant": "#353535",
+                      "primary-fixed": "#d9e6d9",
+                      "surface-bright": "#393939",
+                      "tertiary": "#b6ccb5",
+                      "on-primary-fixed-variant": "#3e4a40",
+                      "outline": "#8d928c",
+                      "inverse-primary": "#556157"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-page": "40px",
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "section-gap": "80px"
+              },
+              "fontFamily": {
+                      "h3": ["Newsreader"],
+                      "body-md": ["Inter"],
+                      "h2": ["Newsreader"],
+                      "h1": ["Newsreader"],
+                      "body-lg": ["Inter"],
+                      "label-caps": ["Inter"]
+              },
+              "fontSize": {
+                      "h3": ["24px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "h2": ["32px", {"lineHeight": "1.3", "fontWeight": "400"}],
+                      "h1": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "300"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background-color: rgba(42, 42, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(141, 146, 140, 0.2);
+        }
+        .glass-panel:hover {
+            border: 0.5px solid rgba(230, 193, 131, 0.5);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+        .ambient-glow {
+            position: absolute;
+            width: 60vh;
+            height: 60vh;
+            background: radial-gradient(circle, rgba(182, 204, 181, 0.05) 0%, rgba(19, 19, 19, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden selection:bg-secondary/30">
+<!-- Ambient Background Glows -->
+<div class="ambient-glow top-0 right-0 translate-x-1/4 -translate-y-1/4"></div>
+<div class="ambient-glow bottom-0 left-0 -translate-x-1/4 translate-y-1/4" style="background: radial-gradient(circle, rgba(230, 193, 131, 0.03) 0%, rgba(19, 19, 19, 0) 70%);"></div>
+<!-- TopAppBar (Mobile Only) -->
+<header class="md:hidden fixed top-0 w-full z-40 bg-stone-950/40 backdrop-blur-md text-stone-200 border-b border-stone-800/30 shadow-none font-newsreader tracking-tight flex justify-between items-center px-8 py-5">
+<div class="text-2xl font-light italic text-stone-100 tracking-widest cursor-pointer active:opacity-70 transition-opacity">Aura</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer active:opacity-70 transition-opacity hover:text-stone-200 transition-all duration-500 text-stone-500">settings</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-70 transition-opacity hover:text-stone-200 transition-all duration-500 text-stone-500">account_circle</span>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex fixed left-0 top-0 flex-col pt-24 pb-12 h-screen w-72 border-r border-stone-800/20 shadow-2xl bg-neutral-900/60 backdrop-blur-2xl text-stone-200 font-newsreader font-light z-50">
+<div class="px-8 mb-12">
+<h1 class="text-xl font-medium tracking-tighter text-stone-100">Aura</h1>
+<p class="text-stone-500 font-body-md text-sm mt-1">Digital Sanctuary</p>
+</div>
+<div class="flex flex-col gap-2 px-4 flex-1">
+<a class="text-stone-500 px-4 py-3 hover:text-stone-300 hover:bg-stone-800/20 hover:translate-x-1 transition-transform duration-300 ease-in-out flex items-center gap-4 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">spa</span>
+<span>Presence</span>
+</a>
+<a class="text-stone-100 bg-stone-800/30 rounded-lg px-4 py-3 italic border-l-2 border-stone-400 ease-in-out flex items-center gap-4" href="#">
+<span class="material-symbols-outlined text-lg">auto_awesome_motion</span>
+<span>Gallery</span>
+</a>
+<a class="text-stone-500 px-4 py-3 hover:text-stone-300 hover:bg-stone-800/20 hover:translate-x-1 transition-transform duration-300 ease-in-out flex items-center gap-4 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">history_edu</span>
+<span>Reflections</span>
+</a>
+<a class="text-stone-500 px-4 py-3 hover:text-stone-300 hover:bg-stone-800/20 hover:translate-x-1 transition-transform duration-300 ease-in-out flex items-center gap-4 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">nights_stay</span>
+<span>Silence</span>
+</a>
+</div>
+<div class="px-8 mt-auto flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="User profile" class="w-10 h-10 rounded-full object-cover border border-stone-800" data-alt="A close-up portrait of a serene individual, softly lit against a dark background, reflecting the calm, meditative Poetic Minimalism style of the Aura design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5iGoqA6F0k2LPoa49uM0eE4vUtkXw8QbLNyMsqB7Nkz1gXASzGYv3Tddfh9QXhUf202CWT6gCxFJmOje4E2a0AUILr9QfHgWaj-KZUK6G0tyRWhnWj_ZWdBAvyduoINwkTIO_W-ZhunyWBDfK3Jv5fhn-nv5Uo68jq_GZYtrJhgPDPMMHMHfHcMjVSLLUUqXkUpvcu4o_YLhpLc1G3t3OXRVC_oOj3C65C9RDiTYwNlDUKf6bcq6ADJB3aj8qZqEjqYU3UIuH7OM"/>
+<span class="font-body-md text-sm text-stone-400">Settings</span>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 pt-24 md:pt-0 pb-32 md:pb-12 min-h-screen flex flex-col relative z-10">
+<!-- Header Section -->
+<section class="px-margin-page md:px-section-gap py-section-gap max-w-5xl mx-auto w-full text-center">
+<h1 class="font-h1 text-h1 text-on-surface mb-6 font-light">Memory Gallery</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+                A gentle walkthrough of your shared moments and quiet realizations.
+            </p>
+</section>
+<!-- Gallery Grid (Bento Style) -->
+<section class="px-margin-page md:px-section-gap pb-section-gap max-w-7xl mx-auto w-full">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Memory Card 1 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500 col-span-1 md:col-span-2 lg:col-span-1 row-span-2">
+<div class="relative h-64 md:h-80 w-full overflow-hidden">
+<img alt="Autumn leaf on dark stone" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-in-out opacity-80" data-alt="A single, delicate autumn leaf resting gently on dark, wet stone. The lighting is moody and low-key, emphasizing the warm golds and oranges of the leaf against the deep charcoal background. The mood is highly contemplative and still, perfectly matching the Poetic Minimalism aesthetic of a digital sanctuary." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKkJbRuw5NucnVH8yw0fBE6S-WljtrBt_ZygfieCYQsZ6Tq-auy4ko3R-RjWn3XRFO2tGsTRVtkovmoYaWjhtRQvNOyMl-oh_vIot3mAiRLiPau527mxiwSNNdG8ZfgCNgmFY9NDAH6F3giIlhMSlxwIVGFL1ZH52qh8XE8-OaVu2P_7XXhvwbLr6jixwEA8pGYtz91Mzg2cTh-D3KziTFF2zYAjhH4D-PplK0jerLcu3QNJtAkZbDm48tOt_e-18KVZT1USk9c34"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+</div>
+<div class="p-8 flex flex-col flex-1 relative z-10 -mt-20">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">October 14th</span>
+<span class="material-symbols-outlined text-outline text-sm" style="font-variation-settings: 'FILL' 0;">psychology</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-6 italic text-stone-300">"The stillness of the morning reveals what the noise of the day obscures."</h3>
+<div class="mt-auto flex gap-3 flex-wrap">
+<span class="px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-[10px] uppercase flex items-center gap-1 bg-surface-container-low/50">
+<span class="material-symbols-outlined text-[12px]">water_drop</span> Clarity
+                            </span>
+</div>
+</div>
+</div>
+<!-- Memory Card 2 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500">
+<div class="p-8 flex flex-col flex-1">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">October 10th</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-6 text-stone-200">A brief moment of profound gratitude while watching the rain.</h3>
+<div class="mt-auto flex gap-3 flex-wrap">
+<span class="px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-[10px] uppercase flex items-center gap-1 bg-surface-container-low/50">
+<span class="material-symbols-outlined text-[12px]">self_improvement</span> Stillness
+                            </span>
+</div>
+</div>
+</div>
+<!-- Memory Card 3 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500">
+<div class="relative h-40 w-full overflow-hidden">
+<img alt="Minimalist beach" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-in-out opacity-70 grayscale" data-alt="A vast, empty beach meeting a calm ocean under an overcast sky. The image is rendered in black and white or deep grayscale, emphasizing texture and vastness. The lighting is soft and diffused. The mood evokes quiet introspection and endless possibility, aligning with the deep charcoal-toned glassmorphism of the UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-DcJUEDAbP02288KGewPJvsPDBeLYTzlcaebyYt-w6o-RPj6rCOlKs0OrHkj1byv3xMe5ZOU80UL_hTVfLYaiCLNnr_fqBZ5skOITtAhYItRpssde64oksiwiKLOMMv5CKdWetWoTuJuSSrzBDmWKJncvoW2eN8GXAi3URXaDsfgpLYVepNE2so--D6f4brn-ICU_18JTxSaVVDLbxWR8AXzv7-dNBrIzIcee5O9dEynDYApGKUaX1WJVJwQm6r2RO6UIf8CFSmM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+</div>
+<div class="p-8 flex flex-col flex-1 relative z-10 -mt-10">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">October 2nd</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-4 italic text-stone-400">"Breathing out the weight."</h3>
+</div>
+</div>
+<!-- Memory Card 4 (Text Heavy) -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500 col-span-1 md:col-span-2">
+<div class="p-10 flex flex-col md:flex-row gap-8 items-center h-full">
+<div class="flex-1">
+<div class="flex items-center justify-between mb-6">
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">September 28th</span>
+<span class="material-symbols-outlined text-outline text-sm">spa</span>
+</div>
+<h2 class="font-h2 text-h2 text-on-surface mb-4 font-light">Found space between the thoughts. The tension in my shoulders finally dissolved after a long walk through the mist.</h2>
+</div>
+<div class="w-full md:w-1/3 h-48 md:h-full rounded-lg overflow-hidden relative">
+<img alt="Misty forest" class="object-cover w-full h-full opacity-60" data-alt="A dense, moody pine forest shrouded in thick, cool morning mist. The color palette is dominated by deep, muted greens and stark atmospheric grays. The lighting is ethereal and mysterious. This serene nature photography acts as a canvas supporting the Poetic Minimalism and high-end immersive experience of the design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB72VJsYqcriR8yXkl-EXFMyyyDwL9wkOKIk9Rczs-IQ7rkK5tTFb0g9GYqHZff0PeUXrtfL2lPW43WGbZfO_EXVrbAVpnUU5HIG1b7yIVKnTpSm59Q1eL6KaDrEHqpfC2N0u-T0Z8PCP3ZAMf-G2vBYrmEx0ft-5WgT5qkckQ0xT6sJDksZsZfXUfCHSrDeYeqt2EkamDmQzqGLFkMiAr5G4hc_H_S28y_hgzC05QxmwoP6zSWkm1Dx9NV76DfF5i4x9So7e_cmGo"/>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-16 flex justify-center">
+<button class="font-label-caps text-label-caps text-secondary uppercase tracking-widest border-b border-secondary pb-1 hover:text-secondary-fixed transition-colors duration-300">
+                    Load Earlier Memories
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full h-20 flex justify-around items-center px-6 pb-safe bg-stone-950/80 backdrop-blur-xl text-stone-200 font-newsreader text-[11px] uppercase tracking-widest rounded-t-3xl border-t border-stone-800/30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-50">
+<a class="flex flex-col items-center justify-center text-stone-600 hover:text-stone-300 active:scale-95 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1">home_max</span>
+<span>Sanctuary</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-100 scale-105 active:scale-95 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">auto_awesome_motion</span>
+<span>Memories</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-600 hover:text-stone-300 active:scale-95 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1">edit_note</span>
+<span>Write</span>
+</a>
+</nav>
+</body></html>

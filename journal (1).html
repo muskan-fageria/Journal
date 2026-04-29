@@ -1,321 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Daily Journal</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Syllable - Digital Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Newsreader:ital,wght@0,300;0,400;1,400&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="journal.css">
+<script id="tailwind-config">
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "error-container": "#93000a",
+                "surface-container-low": "#1b1c1c",
+                "secondary-fixed-dim": "#e6c183",
+                "on-primary-fixed": "#131e16",
+                "surface-tint": "#bdcabe",
+                "surface-dim": "#131313",
+                "on-secondary": "#422d00",
+                "on-primary": "#28332b",
+                "surface-container-high": "#2a2a2a",
+                "background": "#131313",
+                "secondary-container": "#5e4513",
+                "inverse-surface": "#e5e2e1",
+                "inverse-primary": "#556157",
+                "tertiary-fixed-dim": "#b6ccb5",
+                "on-tertiary-fixed": "#0e1f10",
+                "on-error-container": "#ffdad6",
+                "primary": "#bdcabe",
+                "tertiary-container": "#152717",
+                "secondary": "#e6c183",
+                "surface-variant": "#353535",
+                "on-tertiary": "#223524",
+                "outline-variant": "#434843",
+                "on-secondary-fixed-variant": "#5b4311",
+                "on-surface-variant": "#c4c8c2",
+                "surface-container-highest": "#353535",
+                "surface-bright": "#393939",
+                "primary-fixed": "#d9e6d9",
+                "on-error": "#690005",
+                "surface": "#131313",
+                "secondary-fixed": "#ffdea8",
+                "primary-container": "#1b261e",
+                "error": "#ffb4ab",
+                "on-primary-fixed-variant": "#3e4a40",
+                "tertiary": "#b6ccb5",
+                "on-surface": "#e5e2e1",
+                "inverse-on-surface": "#303030",
+                "on-primary-container": "#818e83",
+                "on-secondary-fixed": "#271900",
+                "tertiary-fixed": "#d2e9d0",
+                "on-tertiary-fixed-variant": "#384b39",
+                "on-secondary-container": "#d7b377",
+                "on-background": "#e5e2e1",
+                "on-tertiary-container": "#7b907a",
+                "surface-container-lowest": "#0e0e0e",
+                "outline": "#8d928c",
+                "surface-container": "#1f2020",
+                "primary-fixed-dim": "#bdcabe"
+            },
+            borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+            spacing: { "gutter": "24px", "margin-page": "40px", "unit": "8px", "section-gap": "80px" },
+            fontFamily: {
+                "body-md": ["Inter"], "body-lg": ["Inter"], "h3": ["Newsreader"],
+                "label-caps": ["Inter"], "h1": ["Newsreader"], "h2": ["Newsreader"]
+            },
+            fontSize: {
+                "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                "h3": ["24px", { lineHeight: "1.4", fontWeight: "400" }],
+                "label-caps": ["12px", { lineHeight: "1.2", letterSpacing: "0.1em", fontWeight: "600" }],
+                "h1": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "300" }],
+                "h2": ["32px", { lineHeight: "1.3", fontWeight: "400" }]
+            }
+        }
+    }
+}
+</script>
+<style>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+body { background: none; color: inherit; }
+body::before { display: none; }
+nav, main, .page { display: block; }
+</style>
 </head>
-<body>
+<body class="bg-background text-on-surface antialiased selection:bg-secondary selection:text-on-secondary">
+<div class="fixed inset-0 z-[-1]">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center" data-alt="deep moody pine forest enveloped in morning mist with subtle hints of dawn light filtering through towering trees"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
+</div>
 
 
-<nav>
-  <div class="nav-inner">
-    <div class="nav-brand">my <span>journal</span> ✦</div>
-    <ul class="nav-tabs">
-      <li><button class="active" onclick="showPage('today',this)">Today</button></li>
-      <li><button onclick="showPage('tasks',this)">Task</button></li>
-      <li><button onclick="showPage('events',this)">Memory Tracker</button></li>
-      <li><button onclick="showPage('log',this)">Log</button></li>
-    </ul>
-    <div class="nav-date" id="nav-date-display"></div>
-  </div>
+<nav class="hidden md:flex flex-col py-8 gap-12 fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50">
+<div class="px-8 flex flex-col gap-2">
+<span class="font-newsreader text-xl text-stone-100">Syllable</span>
+<span class="font-sans text-xs tracking-widest uppercase text-stone-500">Digital Sanctuary</span>
+</div>
+<div class="flex flex-col gap-4 flex-grow">
+<a href="journal (1).html" class="flex items-center gap-4 text-amber-200 border-l-2 border-amber-200/50 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer active">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+    Today
+</a>
+<a href="growth.html" class="flex items-center gap-4 text-stone-500 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">trending_up</span>
+    Growth
+</a>
+<a href="archive.html" class="flex items-center gap-4 text-stone-500 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history</span>
+    Archive
+</a>
+<a href="memory.html" class="flex items-center gap-4 text-stone-500 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_awesome_motion</span>
+    Memories
+</a>
+</div>
+<div class="px-8 mt-auto">
+<div class="font-sans text-xs tracking-widest text-stone-500" id="nav-date-display"></div>
+</div>
 </nav>
-
-<main>
+<main class="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap" style="max-width: none; padding-top: 2rem;">
 
 <!-- TODAY -->
 <div id="page-today" class="page active">
-  <div class="today-hero">
-    <div class="hero-date" id="hero-date"></div>
-    <h2 id="hero-greeting">Good morning ✦</h2>
-    <div class="hero-sub">How is your day unfolding?</div>
-    <div class="quick-stats">
-      <div class="qstat"><span class="label">Day Rating</span><span class="value" id="qs-rating">—</span></div>
-      <div class="qstat"><span class="label">Mood</span><span class="value" id="qs-mood">—</span></div>
-      <div class="qstat"><span class="label">Tasks Done</span><span class="value" id="qs-tasks">0</span></div>
-      <div class="qstat"><span class="label">Screen Time</span><span class="value" id="qs-screen">—</span></div>
-      <div class="qstat"><span class="label">Prod. Hours</span><span class="value" id="qs-prod">—</span></div>
+  <header class="max-w-4xl pt-8 md:pt-12">
+    <div id="hero-date" class="font-label-caps text-secondary mb-4 block tracking-widest uppercase"></div>
+    <h1 class="font-h1 text-h1 text-on-surface mb-6" id="hero-greeting">Good morning ✦</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">How is your day unfolding? Take a breath before you begin.</p>
+    <div class="hidden" style="display:none">
+      <!-- Hidden elements required by journal.js so they don't break -->
+      <span id="qs-rating"></span><span id="qs-mood"></span><span id="qs-tasks"></span><span id="qs-screen"></span><span id="qs-prod"></span>
     </div>
-  </div>
+  </header>
 
-  <div class="grid-2" style="margin-bottom:1.25rem">
-    <div class="card">
-      <div class="card-title">🌈 Mood & Atmosphere</div>
-      <div class="form-group">
-        <span class="form-label">Your mood today</span>
-        <div class="mood-picker">
-          <button class="mood-btn" onclick="selectMood(this,'😊')">😊</button>
-          <button class="mood-btn" onclick="selectMood(this,'😄')">😄</button>
-          <button class="mood-btn" onclick="selectMood(this,'😌')">😌</button>
-          <button class="mood-btn" onclick="selectMood(this,'😐')">😐</button>
-          <button class="mood-btn" onclick="selectMood(this,'😔')">😔</button>
-          <button class="mood-btn" onclick="selectMood(this,'😤')">😤</button>
-          <button class="mood-btn" onclick="selectMood(this,'😴')">😴</button>
-          <button class="mood-btn" onclick="selectMood(this,'🥰')">🥰</button>
-          <button class="mood-btn" onclick="selectMood(this,'🤩')">🤩</button>
-          <button class="mood-btn" onclick="selectMood(this,'😰')">😰</button>
+  <!-- Reflection & Rhythms -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-section-gap">
+    <div class="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 flex flex-col justify-between min-h-[360px] group hover:border-secondary/50 hover:shadow-[0_12px_24px_rgba(0,0,0,0.3)] transition-all duration-500 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+      <div class="relative z-10">
+        <span class="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase">Current State</span>
+        <h2 class="font-h2 text-h2 text-on-surface max-w-xl leading-snug mb-6">How does your spirit feel?</h2>
+        
+        <div class="mood-picker flex flex-wrap gap-4 mb-8">
+          <button class="mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28" onclick="selectMood(this,'Flowing')">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">water_drop</span>
+            <span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Flowing</span>
+          </button>
+          <button class="mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28" onclick="selectMood(this,'Light')">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">air</span>
+            <span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Light</span>
+          </button>
+          <button class="mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28" onclick="selectMood(this,'Heavy')">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">cloud</span>
+            <span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Heavy</span>
+          </button>
+          <button class="mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28" onclick="selectMood(this,'Restless')">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">local_fire_department</span>
+            <span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Restless</span>
+          </button>
+          <button class="mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28" onclick="selectMood(this,'Centered')">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors" style="font-variation-settings: 'FILL' 0, 'wght' 200;">spa</span>
+            <span class="font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase">Centered</span>
+          </button>
         </div>
-      </div>
-      <div class="form-group" style="margin-top:0.75rem">
-        <span class="form-label">Weather vibe</span>
-        <div class="weather-opts">
-          <button class="weather-btn" onclick="selectWeather(this,'☀️','Sunny')">☀️<span>Sunny</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'🌤️','Partly')">🌤️<span>Partly</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'☁️','Cloudy')">☁️<span>Cloudy</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'🌧️','Rainy')">🌧️<span>Rainy</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'⛈️','Stormy')">⛈️<span>Stormy</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'🌨️','Snowy')">🌨️<span>Snowy</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'🌬️','Windy')">🌬️<span>Windy</span></button>
-          <button class="weather-btn" onclick="selectWeather(this,'🌫️','Foggy')">🌫️<span>Foggy</span></button>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">⭐ Day Rating</div>
-      <div class="form-group">
-        <span class="form-label">Rate your day</span>
-        <div class="rating-stars" id="day-rating">
-          <span class="star" onclick="setRating(1)">★</span><span class="star" onclick="setRating(2)">★</span><span class="star" onclick="setRating(3)">★</span><span class="star" onclick="setRating(4)">★</span><span class="star" onclick="setRating(5)">★</span><span class="star" onclick="setRating(6)">★</span><span class="star" onclick="setRating(7)">★</span><span class="star" onclick="setRating(8)">★</span><span class="star" onclick="setRating(9)">★</span><span class="star" onclick="setRating(10)">★</span>
-        </div>
-        <div id="rating-label" style="font-size:0.72rem;color:var(--text-faint);margin-top:0.25rem">Pick a star to rate</div>
-      </div>
-      <div class="form-group" style="margin-top:0.75rem">
-        <span class="form-label">Energy, Focus & Stress</span>
-        <div class="slider-wrap">
-          <div class="slider-row"><span class="slider-label">⚡ Energy</span><input type="range" min="0" max="10" value="0" id="energy-slider" oninput="updateSlider('energy-slider','energy-val','energy')"><span class="slider-val" id="energy-val">0</span></div>
-          <div class="slider-row"><span class="slider-label">🎯 Focus</span><input type="range" min="0" max="10" value="0" id="focus-slider" oninput="updateSlider('focus-slider','focus-val','focus')"><span class="slider-val" id="focus-val">0</span></div>
-          <div class="slider-row"><span class="slider-label">😤 Stress</span><input type="range" min="0" max="10" value="0" id="stress-slider" oninput="updateSlider('stress-slider','stress-val','stress')"><span class="slider-val" id="stress-val">0</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
+        <div class="flex flex-col gap-4">
+          <div>
+            <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider mb-2 block">Rate your day</span>
+            <div class="rating-stars flex gap-1" id="day-rating">
+              <span class="star" onclick="setRating(1)">★</span><span class="star" onclick="setRating(2)">★</span><span class="star" onclick="setRating(3)">★</span><span class="star" onclick="setRating(4)">★</span><span class="star" onclick="setRating(5)">★</span><span class="star" onclick="setRating(6)">★</span><span class="star" onclick="setRating(7)">★</span><span class="star" onclick="setRating(8)">★</span><span class="star" onclick="setRating(9)">★</span><span class="star" onclick="setRating(10)">★</span>
+            </div>
+            <div id="rating-label" class="text-[10px] text-on-surface-variant mt-1">Pick a star to rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rhythms -->
+    <div class="lg:col-span-4 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-8 flex flex-col">
+      <span class="font-label-caps text-label-caps text-on-surface-variant mb-8 block tracking-widest uppercase">Rhythms</span>
+      <div id="habit-list-today" class="flex flex-col gap-4 flex-grow justify-start" style="margin-top: 0;">
+        <div class="empty-state" style="padding:1.5rem"><div class="es-icon">🌿</div>No habits yet.</div>
+      </div>
+      <div class="mt-8 border-t border-white/10 pt-6">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-3">Add Rhythm</span>
+        <div style="display:flex;gap:0.5rem">
+          <input type="text" id="h-name-new" placeholder="e.g. Morning Stillness" class="w-full bg-surface-container-high border border-outline-variant rounded-md text-sm p-2 text-on-surface focus:ring-secondary focus:border-secondary">
+          <button class="bg-secondary/10 border border-secondary/30 text-secondary px-4 py-2 rounded-md font-label-caps uppercase text-xs hover:bg-secondary/20 transition-colors" onclick="addHabitTask()">Add</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vitality & Consistency -->
+  <section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+    <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+            <!-- Health Metrics -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Vitality</span>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+            <div class="flex items-center gap-2 text-secondary">
+              <span class="material-symbols-outlined text-[18px]">directions_walk</span>
+              <span class="font-label-caps text-[10px] uppercase tracking-wider">Steps</span>
+            </div>
+            <input type="text" id="h-steps" value="8,432" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0" oninput="updateHealth()">
+            <div class="relative w-4/5 h-1 mt-1">
+              <div class="absolute inset-0 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                <div id="bar-steps" class="bg-secondary w-[80%] h-full rounded-full transition-all duration-300"></div>
+              </div>
+              <input type="range" id="range-steps" min="0" max="10000" step="100" value="8432" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateHealthFromRange('steps')">
+            </div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+            <div class="flex items-center gap-2 text-blue-300">
+              <span class="material-symbols-outlined text-[18px]">water_drop</span>
+              <span class="font-label-caps text-[10px] uppercase tracking-wider">Water</span>
+            </div>
+            <input type="text" id="h-water" value="1.2L" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0" oninput="updateHealth()">
+            <div class="relative w-4/5 h-1 mt-1">
+              <div class="absolute inset-0 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                <div id="bar-water" class="bg-blue-300 w-[60%] h-full rounded-full transition-all duration-300"></div>
+              </div>
+              <input type="range" id="range-water" min="0" max="3" step="0.1" value="1.2" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateHealthFromRange('water')">
+            </div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+            <div class="flex items-center gap-2 text-purple-300">
+              <span class="material-symbols-outlined text-[18px]">bedtime</span>
+              <span class="font-label-caps text-[10px] uppercase tracking-wider">Sleep</span>
+            </div>
+            <input type="text" id="h-sleep" value="7h 15m" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0" oninput="updateHealth()">
+            <div class="relative w-4/5 h-1 mt-1">
+              <div class="absolute inset-0 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                <div id="bar-sleep" class="bg-purple-300 w-[90%] h-full rounded-full transition-all duration-300"></div>
+              </div>
+              <input type="range" id="range-sleep" min="0" max="12" step="0.25" value="7.25" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateHealthFromRange('sleep')">
+            </div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
+            <div class="flex items-center gap-2 text-green-300">
+              <span class="material-symbols-outlined text-[18px]">fitness_center</span>
+              <span class="font-label-caps text-[10px] uppercase tracking-wider">Exercise</span>
+            </div>
+            <input type="text" id="h-exercise" value="45m" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0" oninput="updateHealth()">
+            <div class="relative w-4/5 h-1 mt-1">
+              <div class="absolute inset-0 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                <div id="bar-exercise" class="bg-green-300 w-[100%] h-full rounded-full transition-all duration-300"></div>
+              </div>
+              <input type="range" id="range-exercise" min="0" max="120" step="5" value="45" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateHealthFromRange('exercise')">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Focus & Energy -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Internal State</span>
+        <div class="flex flex-col gap-8 justify-center h-full pb-4">
+          <div class="slider-row flex items-center gap-4">
+            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Energy</span>
+            <div class="elastic-wrap flex-grow relative h-8" id="energy-wrap" data-key="energy">
+              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
+              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
+            </div>
+            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="energy-val">0</span>
+          </div>
+          <div class="slider-row flex items-center gap-4">
+            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Focus</span>
+            <div class="elastic-wrap flex-grow relative h-8" id="focus-wrap" data-key="focus">
+              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
+              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
+            </div>
+            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="focus-val">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Column: Digital Space & Consistency -->
+    <div class="lg:col-span-4 flex flex-col gap-gutter">
+      <!-- Digital Space -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col flex-shrink-0">
+        <div class="flex items-center justify-between mb-6">
+          <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Digital Space</span>
+          <span class="text-xs text-on-surface-variant" id="total-social-time">2h 15m Total</span>
+        </div>
+        <div class="flex flex-col gap-4 overflow-y-auto pr-2" style="max-height: 250px;">
+          <!-- Instagram -->
+          <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+              <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+            </div>
+            <div class="flex-grow flex flex-col">
+              <div class="flex justify-between items-center mb-1"><span class="font-body-md text-sm text-on-surface">Instagram</span><span class="font-label-caps text-[10px] text-on-surface-variant" id="ig-time">45m</span></div>
+              <div class="relative w-full h-1.5 mt-1">
+                <div class="absolute inset-0 bg-white/5 rounded-full overflow-hidden pointer-events-none">
+                  <div id="bar-ig" class="bg-pink-400/70 w-[60%] h-full rounded-full transition-all duration-300"></div>
+                </div>
+                <input type="range" id="ig-slider" min="0" max="75" value="45" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateSocial('ig', 'ig-slider','ig-time')">
+              </div>
+            </div>
+          </div>
+
+          <!-- Slack -->
+          <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <span class="material-symbols-outlined text-[16px]">forum</span>
+            </div>
+            <div class="flex-grow flex flex-col">
+              <div class="flex justify-between items-center mb-1"><span class="font-body-md text-sm text-on-surface">Slack</span><span class="font-label-caps text-[10px] text-on-surface-variant" id="sl-time">1h 10m</span></div>
+              <div class="relative w-full h-1.5 mt-1">
+                <div class="absolute inset-0 bg-white/5 rounded-full overflow-hidden pointer-events-none">
+                  <div id="bar-sl" class="bg-blue-400/80 w-[80%] h-full rounded-full transition-all duration-300"></div>
+                </div>
+                <input type="range" id="sl-slider" min="0" max="88" value="70" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateSocial('sl', 'sl-slider','sl-time')">
+              </div>
+            </div>
+          </div>
+
+          <!-- Books -->
+          <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-lg bg-yellow-600/10 border border-yellow-600/20 flex items-center justify-center text-yellow-600">
+              <span class="material-symbols-outlined text-[16px]">menu_book</span>
+            </div>
+            <div class="flex-grow flex flex-col">
+              <div class="flex justify-between items-center mb-1"><span class="font-body-md text-sm text-on-surface">Books</span><span class="font-label-caps text-[10px] text-on-surface-variant" id="bk-time">20m</span></div>
+              <div class="relative w-full h-1.5 mt-1">
+                <div class="absolute inset-0 bg-white/5 rounded-full overflow-hidden pointer-events-none">
+                  <div id="bar-bk" class="bg-yellow-600/80 w-[20%] h-full rounded-full transition-all duration-300"></div>
+                </div>
+                <input type="range" id="bk-slider" min="0" max="100" value="20" class="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 opacity-0 cursor-pointer z-10 appearance-none" oninput="updateSocial('bk', 'bk-slider','bk-time')">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consistency -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between flex-grow">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Consistency</span>
+        <div class="flex items-center justify-center flex-col gap-2">
+          <div class="relative w-32 h-32 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewBox="0 0 36 36">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6c183" stroke-dasharray="100, 100" stroke-dashoffset="25" stroke-width="2"></path>
+            </svg>
+            <div class="flex flex-col items-center text-center">
+              <span class="font-h2 text-3xl text-on-surface">12</span>
+              <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Remarks & Capture -->
+  <section class="mt-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 relative overflow-hidden group mb-8">
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+    <div class="relative z-10 flex flex-col gap-6">
+        <span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Remarks, Gratitude, A Word</span>
+        
+        <textarea id="daily-remark" placeholder="Capture a fleeting thought..." class="w-full bg-transparent border-b border-outline-variant text-on-surface font-h3 text-xl focus:border-secondary focus:ring-0 p-2 min-h-[100px] resize-none" oninput="updateRemark()"></textarea>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+            <div>
+                <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-2">Gratitude Note</span>
+                <input type="text" id="gratitude" placeholder="Today I'm grateful for..." class="w-full bg-transparent border-b border-outline-variant text-on-surface p-2 focus:border-secondary focus:ring-0">
+            </div>
+            <div>
+                <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-2">One Word</span>
+                <input type="text" id="one-word" placeholder="Productive, Peaceful..." class="w-full bg-transparent border-b border-outline-variant text-on-surface p-2 focus:border-secondary focus:ring-0">
+            </div>
+            <div>
+                <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-2">Productive Hours</span>
+                <input type="number" step="0.5" id="h-productive" placeholder="4.5" class="w-full bg-transparent border-b border-outline-variant text-on-surface p-2 focus:border-secondary focus:ring-0" oninput="document.getElementById('qs-prod').textContent=this.value+'h'">
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <button class="bg-white/10 backdrop-blur-md border border-white/20 text-secondary font-label-caps text-label-caps px-8 py-3 rounded-full hover:bg-white/20 transition-colors flex items-center w-max gap-2 cursor-pointer" onclick="saveTodayEntry()">
+                <span class="material-symbols-outlined text-[16px]">edit_note</span>
+                Save Entry
+            </button>
+        </div>
+    </div>
+  </section>
+  
   <!-- Trend chart -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📈 Rating Trend — Last 14 Days</div>
-    <div class="chart-wrap"><svg id="trend-svg" class="line-svg"></svg></div>
-  </div>
-
-  <!-- Health -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">💪 Health Today</div>
-    <div class="grid-4">
-      <div class="health-metric"><div class="hm-icon">👟</div><input class="hinput" type="number" placeholder="0" id="h-steps" oninput="updateHealth()"><div class="hm-unit">steps</div><div class="hm-label">Steps</div></div>
-      <div class="health-metric"><div class="hm-icon">💧</div><input class="hinput" type="number" placeholder="0" id="h-water" oninput="updateHealth()"><div class="hm-unit">glasses</div><div class="hm-label">Water</div></div>
-      <div class="health-metric"><div class="hm-icon">😴</div><input class="hinput" type="number" placeholder="0" step="0.5" id="h-sleep" oninput="updateHealth()"><div class="hm-unit">hours</div><div class="hm-label">Sleep</div></div>
-      <div class="health-metric"><div class="hm-icon">🏃</div><input class="hinput" type="number" placeholder="0" id="h-exercise" oninput="updateHealth()"><div class="hm-unit">mins</div><div class="hm-label">Exercise</div></div>
-    </div>
-    <div class="form-group" style="margin-top:1rem"><span class="form-label">⏱ Productive Hours Today</span><input type="number" placeholder="e.g. 4.5" step="0.5" id="h-productive" oninput="document.getElementById('qs-prod').textContent=this.value+'h'" style="max-width:120px"></div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:1.25rem">
-    <div class="card">
-      <div class="card-title">✅ Today's Focus</div>
-      <div id="today-tasks-list" class="task-list"><div class="empty-state" style="padding:1.5rem"><div class="es-icon">📋</div>No tasks yet. Add in Tasks tab!</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🖊️ Daily Remark</div>
-      <div class="form-group"><span class="form-label">How was your day?</span><textarea id="daily-remark" placeholder="Write your thoughts, highlights..." style="min-height:110px" oninput="updateRemark()"></textarea></div>
-      <div class="form-group"><span class="form-label">Gratitude Note</span><input type="text" id="gratitude" placeholder="Today I'm grateful for..."></div>
-      <div class="form-group"><span class="form-label">One word for today</span><input type="text" id="one-word" placeholder="e.g. Productive, Peaceful..."></div>
-      <div class="btn-row"><button class="btn btn-sm" onclick="saveTodayEntry()">💾 Save Entry</button></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🎨 Hobby Progress</div>
-    <div class="grid-2">
-      <div id="hobby-list"><div class="empty-state" style="padding:1rem">Add hobbies →</div></div>
-      <div>
-        <div class="form-group"><span class="form-label">Hobby Name</span><input type="text" id="hobby-name" placeholder="e.g. Guitar, Reading..."></div>
-        <div class="form-group"><span class="form-label">Minutes Today</span><input type="number" id="hobby-mins" placeholder="30"></div>
-        <div class="form-group"><span class="form-label">Streak (days)</span><input type="number" id="hobby-streak" placeholder="0" min="0"></div>
-        <button class="btn btn-sm btn-green" onclick="addHobby()">+ Log Hobby</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TASKS -->
-<div id="page-tasks" class="page">
-  <div class="section-header"><h1>Tasks</h1><span class="sub">your daily to-dos, captured</span></div>
-
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📅 Week at a Glance — click a day to view its tasks</div>
-    <div class="cal-strip" id="cal-strip"></div>
-    <div id="past-day-panel" style="display:none">
-      <div class="past-panel-hdr">
-        <div class="past-panel-date" id="past-day-label"></div>
-        <button class="btn btn-outline btn-sm" onclick="closePastDay()">✕ Close</button>
-      </div>
-      <div id="past-day-tasks" class="task-list"></div>
-    </div>
-  </div>
-
-  <!-- Task chart -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📊 Tasks Completed — Last 7 Days</div>
-    <div class="chart-wrap">
-      <div class="bar-chart-inner" id="task-bar-chart"></div>
-      <div class="chart-x" id="task-bar-x"></div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">➕ Add Task</div>
-      <div class="form-group"><span class="form-label">Task</span><input type="text" id="t-name" placeholder="What needs to be done?"></div>
-      <div class="grid-2">
-        <div class="form-group"><span class="form-label">Category</span><select id="t-cat"><option value="task">📋 Task</option><option value="project">📁 Project</option><option value="personal">💛 Personal</option></select></div>
-        <div class="form-group"><span class="form-label">Priority</span><select id="t-priority"><option value="high">🔴 High</option><option value="medium">🟡 Medium</option><option value="low">🟢 Low</option></select></div>
-      </div>
-      <div class="form-group"><span class="form-label">Notes</span><input type="text" id="t-notes" placeholder="Any notes..."></div>
-      <div class="form-group"><span class="form-label">Due Date</span><input type="date" id="t-due"></div>
-      <div class="btn-row"><button class="btn" onclick="addTask()">Add Task</button><button class="btn btn-outline btn-sm" onclick="clearCompleted()">Clear done</button></div>
-    </div>
-    <div class="card">
-      <div class="card-title">📋 Tasks <span id="task-count" style="font-size:0.72rem;color:var(--text-faint);font-weight:400;margin-left:auto"></span></div>
-      <div style="margin-bottom:0.75rem;display:flex;gap:0.4rem;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="filterTasks('all')">All</button>
-        <button class="btn btn-outline btn-sm" onclick="filterTasks('task')">📋</button>
-        <button class="btn btn-outline btn-sm" onclick="filterTasks('project')">📁</button>
-        <button class="btn btn-outline btn-sm" onclick="filterTasks('personal')">💛</button>
-        <button class="btn btn-outline btn-sm" onclick="filterTasks('done')">✅ Done</button>
-      </div>
-      <div id="task-list-main" class="task-list"><div class="empty-state"><div class="es-icon">🌿</div>No tasks yet.</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- PROJECTS -->
-<div id="page-projects" class="page">
-  <div class="section-header"><h1>Projects</h1><span class="sub">longer arcs, tracked with care</span></div>
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📊 Project Progress Overview</div>
-    <div id="project-chart-wrap" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;min-height:140px;padding:0.5rem 0"></div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">📁 New Project</div>
-      <div class="form-group"><span class="form-label">Project Name</span><input type="text" id="p-name" placeholder="e.g. Portfolio Website..."></div>
-      <div class="form-group"><span class="form-label">Description</span><textarea id="p-desc" placeholder="What is this project about?" style="min-height:70px"></textarea></div>
-      <div class="grid-2">
-        <div class="form-group"><span class="form-label">Status</span><select id="p-status"><option value="active">Active</option><option value="paused">Paused</option><option value="done">Done</option></select></div>
-        <div class="form-group"><span class="form-label">Progress %</span><input type="number" id="p-pct" placeholder="0" min="0" max="100"></div>
-      </div>
-      <div class="form-group"><span class="form-label">Deadline</span><input type="date" id="p-deadline"></div>
-      <div class="btn-row"><button class="btn" onclick="addProject()">Add Project</button></div>
-    </div>
-    <div class="card"><div class="card-title">📊 My Projects</div><div id="projects-list"><div class="empty-state"><div class="es-icon">🗂️</div>No projects yet.</div></div></div>
-  </div>
-</div>
-
-<!-- EVENTS (Memory Tracker) -->
-<div id="page-events" class="page">
-  <div class="section-header"><h1>Memory Tracker</h1><span class="sub">moments worth remembering</span></div>
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📊 Events by Category</div>
-    <div id="events-chart-wrap" style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;padding:0.5rem 0;min-height:90px"><div style="font-size:0.82rem;color:var(--text-faint);font-style:italic">No events yet.</div></div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">🗓️ Add Event</div>
-      <div class="form-group"><span class="form-label">Event Name</span><input type="text" id="e-name" placeholder="e.g. Doctor's appointment..."></div>
-      <div class="grid-2">
-        <div class="form-group"><span class="form-label">Date</span><input type="date" id="e-date"></div>
-        <div class="form-group"><span class="form-label">Time</span><input type="time" id="e-time"></div>
-      </div>
-      <div class="form-group"><span class="form-label">Category</span><select id="e-cat"><option value="personal">💛 Personal</option><option value="work">💼 Work</option><option value="social">🎉 Social</option><option value="health">💪 Health</option><option value="other">📌 Other</option></select></div>
-      <div class="form-group"><span class="form-label">Notes</span><input type="text" id="e-notes" placeholder="Anything to remember?"></div>
-      <div class="btn-row"><button class="btn" onclick="addEvent()">Add Event</button></div>
-    </div>
-    <div class="card"><div class="card-title">📅 Logged Events</div><div id="events-list"><div class="empty-state"><div class="es-icon">🌿</div>No events yet.</div></div></div>
-  </div>
-</div>
-
-<!-- SOCIAL & SCREEN -->
-<div id="page-social" class="page">
-  <div class="section-header"><h1>Social & Screen</h1><span class="sub">mindful of your digital life</span></div>
-  <div class="grid-2" style="margin-bottom:1.25rem">
-    <div class="card">
-      <div class="card-title">📱 Total Screen Time</div>
-      <div class="ring-chart">
-        <svg viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="#1a2420" stroke-width="10"/>
-          <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gg)" stroke-width="10" stroke-dasharray="264" id="ring-circle" stroke-dashoffset="264" stroke-linecap="round"/>
-          <defs><linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#5a7a46"/><stop offset="100%" style="stop-color:#8fb86e"/></linearGradient></defs>
-        </svg>
-        <div class="ring-text"><div class="ring-val" id="ring-total">0h</div><div class="ring-unit">today</div></div>
-      </div>
-      <div style="margin-bottom:1rem"><div class="slider-row"><span class="slider-label" style="min-width:110px">🎯 Daily Goal (hrs)</span><input type="number" id="screen-goal" placeholder="6" step="0.5" style="max-width:80px" oninput="updateScreenRing()"></div></div>
-      <div class="ring-legend" id="ring-legend"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔗 Social Media Tracker</div>
-      <div style="font-size:0.7rem;color:var(--text-faint);margin-bottom:0.75rem;font-style:italic">Each slider goes up to 12 hours</div>
-      <div class="social-app-row"><div class="social-icon">📸</div><div class="social-name">Instagram</div><input type="range" min="0" max="720" value="0" id="ig-slider" oninput="updateSocial('ig-slider','ig-time')"><div class="social-time" id="ig-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">🐦</div><div class="social-name">Twitter/X</div><input type="range" min="0" max="720" value="0" id="tw-slider" oninput="updateSocial('tw-slider','tw-time')"><div class="social-time" id="tw-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">▶️</div><div class="social-name">YouTube</div><input type="range" min="0" max="720" value="0" id="yt-slider" oninput="updateSocial('yt-slider','yt-time')"><div class="social-time" id="yt-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">🎵</div><div class="social-name">TikTok</div><input type="range" min="0" max="720" value="0" id="tt-slider" oninput="updateSocial('tt-slider','tt-time')"><div class="social-time" id="tt-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">💼</div><div class="social-name">LinkedIn</div><input type="range" min="0" max="720" value="0" id="li-slider" oninput="updateSocial('li-slider','li-time')"><div class="social-time" id="li-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">👻</div><div class="social-name">Snapchat</div><input type="range" min="0" max="720" value="0" id="sc-slider" oninput="updateSocial('sc-slider','sc-time')"><div class="social-time" id="sc-time">0 min</div></div>
-      <div class="social-app-row"><div class="social-icon">💬</div><div class="social-name">WhatsApp</div><input type="range" min="0" max="720" value="0" id="wa-slider" oninput="updateSocial('wa-slider','wa-time')"><div class="social-time" id="wa-time">0 min</div></div>
-    </div>
-  </div>
-  <!-- Social bar chart -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-title">📊 Social Media Breakdown</div>
-    <div class="chart-wrap">
-      <div class="bar-chart-inner" id="social-bar-chart"></div>
-      <div class="chart-x" id="social-bar-x"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">🖥️ Other Screen Categories</div>
-    <div class="grid-3">
-      <div class="form-group"><span class="form-label">📚 Learning (mins)</span><input type="number" placeholder="60" id="sc-learning" oninput="updateScreenRing()"></div>
-      <div class="form-group"><span class="form-label">🎮 Gaming (mins)</span><input type="number" placeholder="30" id="sc-gaming" oninput="updateScreenRing()"></div>
-      <div class="form-group"><span class="form-label">💻 Work / Study (mins)</span><input type="number" placeholder="240" id="sc-work" oninput="updateScreenRing()"></div>
-      <div class="form-group"><span class="form-label">🎬 Streaming (mins)</span><input type="number" placeholder="90" id="sc-stream" oninput="updateScreenRing()"></div>
-      <div class="form-group"><span class="form-label">📰 News / Read (mins)</span><input type="number" placeholder="20" id="sc-news" oninput="updateScreenRing()"></div>
-      <div class="form-group"><span class="form-label">🛍️ Shopping (mins)</span><input type="number" placeholder="15" id="sc-shop" oninput="updateScreenRing()"></div>
-    </div>
-    <div class="btn-row"><button class="btn btn-sm" onclick="saveScreenData()">💾 Save Screen Data</button></div>
-  </div>
-</div>
-
-<!-- LOG -->
-<div id="page-log" class="page">
-  <div class="section-header"><h1>Log</h1><span class="sub">every day, remembered</span></div>
-  <div class="grid-3" style="margin-bottom:1.25rem">
-    <div class="card">
-      <div class="card-title">📈 Rating Trend</div>
-      <div class="chart-wrap"><svg id="log-rating-svg" class="line-svg"></svg></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🌈 Mood Frequency</div>
-      <div id="mood-freq" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;padding:0.5rem 0;min-height:80px"><div style="font-family:'Lora',serif;font-style:italic;font-size:0.85rem;color:var(--text-faint)">Log moods to see patterns.</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title">⭐ Stats</div>
-      <div style="text-align:center;padding:0.5rem"><div style="font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--olive);line-height:1" id="avg-rating-num">—</div><div style="font-size:0.7rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.75rem">avg rating / 10</div></div>
-      <div id="ref-stats"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem">
-      <input type="text" id="ref-search" placeholder="🔍 Search entries..." style="max-width:280px" oninput="renderLog()">
-      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
-      <span style="margin-left:auto;font-family:'Lora',serif;font-style:italic;font-size:0.8rem;color:var(--text-faint)" id="ref-count"></span>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="ref-table">
-        <thead><tr><th>Date</th><th>Tasks Done</th><th>Mood</th><th>Rating</th><th>Remarks</th></tr></thead>
-        <tbody id="ref-tbody"><tr><td colspan="5"><div class="empty-state"><div class="es-icon">📖</div>No entries yet. Save a day!</div></td></tr></tbody>
-      </table>
-    </div>
+  <div class="card mt-8 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-8" style="margin-bottom:1.25rem">
+    <div class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase mb-4">Rating Trend — Last 14 Days</div>
+    <div class="chart-wrap" style="height: 200px;"><svg id="trend-svg" class="line-svg"></svg></div>
   </div>
 </div>
 
