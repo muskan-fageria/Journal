@@ -9,6 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Newsreader:ital,wght@0,300;0,400;1,400&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="journal.css">
+<style>
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-scrolling iframe { pointer-events: none; }
+</style>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script id="tailwind-config">
 tailwind.config = {
     darkMode: "class",
@@ -153,9 +163,9 @@ nav, main, .page { display: block; }
   </header>
 
   <!-- Reflection & Rhythms -->
-  <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-section-gap">
-    <div class="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 flex flex-col justify-between min-h-[360px] group hover:border-secondary/50 hover:shadow-[0_12px_24px_rgba(0,0,0,0.3)] transition-all duration-500 relative overflow-hidden">
-      <div class="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-section-gap bento-unit">
+    <div class="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
+      <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
       <div class="relative z-10">
         <span class="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase">Current State</span>
         <h2 class="font-h2 text-h2 text-on-surface max-w-xl leading-snug mb-6">How does your spirit feel?</h2>
@@ -196,26 +206,29 @@ nav, main, .page { display: block; }
     </div>
 
     <!-- Rhythms -->
-    <div class="lg:col-span-4 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-8 flex flex-col">
-      <span class="font-label-caps text-label-caps text-on-surface-variant mb-8 block tracking-widest uppercase">Rhythms</span>
-      <div id="habit-list-today" class="flex flex-col gap-4 flex-grow justify-start" style="margin-top: 0;">
-        <div class="empty-state" style="padding:1.5rem"><div class="es-icon">🌿</div>No habits yet.</div>
-      </div>
-      <div class="mt-8 border-t border-white/10 pt-6">
-        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-3">Add Rhythm</span>
-        <div style="display:flex;gap:0.5rem">
-          <input type="text" id="h-name-new" placeholder="e.g. Morning Stillness" class="w-full bg-surface-container-high border border-outline-variant rounded-md text-sm p-2 text-on-surface focus:ring-secondary focus:border-secondary">
-          <button class="bg-secondary/10 border border-secondary/30 text-secondary px-4 py-2 rounded-md font-label-caps uppercase text-xs hover:bg-secondary/20 transition-colors" onclick="addHabitTask()">Add</button>
+    <div class="lg:col-span-4 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 flex flex-col relative overflow-hidden group bento-card">
+      <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col h-full">
+        <span class="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase">Rhythms</span>
+        <div id="habit-list-today" class="flex flex-col gap-4 flex-grow justify-start" style="margin-top: 0;">
+          <div class="empty-state" style="padding:1.5rem"><div class="es-icon">🌿</div>No habits yet.</div>
+        </div>
+        <div class="mt-8 border-t border-white/10 pt-6">
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-3">Add Rhythm</span>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="h-name-new" placeholder="e.g. Morning Stillness" class="w-full bg-surface-container-high border border-outline-variant rounded-md text-sm p-2 text-on-surface focus:ring-secondary focus:border-secondary">
+            <button class="bg-secondary/10 border border-secondary/30 text-secondary px-4 py-2 rounded-md font-label-caps uppercase text-xs hover:bg-secondary/20 transition-colors" onclick="addHabitTask()">Add</button>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Vitality & Consistency -->
-  <section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+  <section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter bento-unit">
     <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
             <!-- Health Metrics -->
-      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6">
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 bento-card">
         <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Vitality</span>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
@@ -273,25 +286,30 @@ nav, main, .page { display: block; }
         </div>
       </div>
       
-      <!-- Focus & Energy -->
-      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between">
-        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Internal State</span>
-        <div class="flex flex-col gap-8 justify-center h-full pb-4">
-          <div class="slider-row flex items-center gap-4">
-            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Energy</span>
-            <div class="elastic-wrap flex-grow relative h-8" id="energy-wrap" data-key="energy">
-              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
-              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
+      <!-- Consistency -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between flex-grow bento-card">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Consistency</span>
+        <div class="flex items-center justify-center flex-col gap-2 flex-grow">
+          <div class="relative w-32 h-32 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewBox="0 0 36 36">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6c183" stroke-dasharray="0, 100" stroke-dashoffset="0" stroke-width="2" id="streak-path"></path>
+            </svg>
+            <div class="flex flex-col items-center text-center">
+              <span class="font-h2 text-3xl text-on-surface" id="streak-num">0</span>
+              <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
             </div>
-            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="energy-val">0</span>
           </div>
-          <div class="slider-row flex items-center gap-4">
-            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Focus</span>
-            <div class="elastic-wrap flex-grow relative h-8" id="focus-wrap" data-key="focus">
-              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
-              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
-            </div>
-            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="focus-val">0</span>
+        </div>
+        
+        <div class="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Mindfulness</span>
+            <input type="text" id="h-mindfulness" value="0 Minutes" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0" oninput="updateMindfulness()">
+          </div>
+          <div class="flex flex-col gap-1 text-right">
+            <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Goal</span>
+            <input type="text" id="h-mind-goal" value="150 Minutes" class="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0 text-right" oninput="updateMindfulness()">
           </div>
         </div>
       </div>
@@ -300,7 +318,7 @@ nav, main, .page { display: block; }
     <!-- Right Column: Digital Space & Consistency -->
     <div class="lg:col-span-4 flex flex-col gap-gutter">
       <!-- Digital Space -->
-      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col flex-shrink-0">
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col flex-shrink-0 bento-card">
         <div class="flex items-center justify-between mb-6">
           <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Digital Space</span>
           <span class="text-xs text-on-surface-variant" id="total-social-time">2h 15m Total</span>
@@ -356,19 +374,25 @@ nav, main, .page { display: block; }
         </div>
       </div>
 
-      <!-- Consistency -->
-      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between flex-grow">
-        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Consistency</span>
-        <div class="flex items-center justify-center flex-col gap-2">
-          <div class="relative w-32 h-32 flex items-center justify-center">
-            <svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewBox="0 0 36 36">
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6c183" stroke-dasharray="0, 100" stroke-dashoffset="0" stroke-width="2" id="streak-path"></path>
-            </svg>
-            <div class="flex flex-col items-center text-center">
-              <span class="font-h2 text-3xl text-on-surface" id="streak-num">0</span>
-              <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
+      <!-- Focus & Energy -->
+      <div class="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between bento-card">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Internal State</span>
+        <div class="flex flex-col gap-8 justify-center h-full pb-4">
+          <div class="slider-row flex items-center gap-4">
+            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Energy</span>
+            <div class="elastic-wrap flex-grow relative h-8" id="energy-wrap" data-key="energy">
+              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
+              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
             </div>
+            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="energy-val">0</span>
+          </div>
+          <div class="slider-row flex items-center gap-4">
+            <span class="font-label-caps text-[10px] uppercase tracking-wider text-secondary w-16">Focus</span>
+            <div class="elastic-wrap flex-grow relative h-8" id="focus-wrap" data-key="focus">
+              <svg class="elastic-svg absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none"><path class="elastic-bg fill-none stroke-surface-container-highest stroke-[16px] transition-stroke duration-200" stroke-linecap="round" d="M0,20 Q50,20 100,20" /><path class="elastic-fill fill-none stroke-secondary stroke-[16px]" stroke-linecap="round" d="M0,20 Q50,20 100,20" /></svg>
+              <div class="elastic-thumb absolute top-1/2 left-0 w-6 h-6 -mt-3 -ml-3 rounded-full bg-white border-2 border-secondary shadow-md pointer-events-none transition-transform duration-100"></div>
+            </div>
+            <span class="font-h3 text-xl text-on-surface w-8 text-right" id="focus-val">0</span>
           </div>
         </div>
       </div>
@@ -376,7 +400,7 @@ nav, main, .page { display: block; }
   </section>
 
   <!-- Remarks & Capture -->
-  <section class="mt-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 relative overflow-hidden group mb-8">
+  <section class="mt-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 relative overflow-hidden group mb-8 bento-card">
     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
     <div class="relative z-10 flex flex-col gap-6">
         <span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Remarks, Gratitude, A Word</span>
@@ -408,10 +432,13 @@ nav, main, .page { display: block; }
   </section>
   
   <!-- Trend chart -->
-  <div class="card mt-8 bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-8" style="margin-bottom:1.25rem">
-    <div class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase mb-4">Rating Trend — Last 14 Days</div>
-    <div class="chart-wrap" style="height: 200px;"><svg id="trend-svg" class="line-svg"></svg></div>
-  </div>
+  <section class="mt-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 relative overflow-hidden group mb-8 bento-card">
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+    <div class="relative z-10 flex flex-col gap-6">
+      <div class="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-4">Rating Trend — Last 14 Days</div>
+      <div class="chart-wrap" style="height: 200px;"><svg id="trend-svg" class="line-svg"></svg></div>
+    </div>
+  </section>
 </div>
 
 </main>

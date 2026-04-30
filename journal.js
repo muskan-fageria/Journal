@@ -7,97 +7,177 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.addEventListener('DOMContentLoaded', loadData);
 
 // ========== DATA ==========
-let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '0', water: '0L', sleep: '0h', exercise: '0m', productive: '0' } };
+let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '0', water: '0L', sleep: '0h', exercise: '0m', productive: '0', mindfulness: '0 Minutes', mindGoal: '150 Minutes' } };
 
 const DD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MM = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 async function loadData() {
   toast("Loading data...");
+  try {
+    const [tRes, pRes, eRes, hRes, entRes, sRes, tsRes, mRes] = await Promise.all([
+      db.from('tasks').select('*'),
+      db.from('projects').select('*'),
+      db.from('events').select('*'),
+      db.from('hobbies').select('*'),
+      db.from('entries').select('*'),
+      db.from('social_data').select('*'),
+      db.from('today_state').select('*').single(),
+      db.from('memories').select('*').order('created_at', { ascending: false })
+    ]);
 
-  const [tRes, pRes, eRes, hRes, entRes, sRes, tsRes, mRes] = await Promise.all([
-    db.from('tasks').select('*'),
-    db.from('projects').select('*'),
-    db.from('events').select('*'),
-    db.from('hobbies').select('*'),
-    db.from('entries').select('*'),
-    db.from('social_data').select('*'),
-    db.from('today_state').select('*').single(),
-    db.from('memories').select('*').order('created_at', { ascending: false })
-  ]);
+    if (tRes.data) data.tasks = tRes.data;
+    if (pRes.data) data.projects = pRes.data;
+    if (eRes.data) data.events = eRes.data;
+    if (hRes.data) data.hobbies = hRes.data;
+    if (entRes.data) data.entries = entRes.data.map(e => ({ ...e, dateStr: e.date_str, oneWord: e.one_word }));
 
-  if (tRes.data) data.tasks = tRes.data;
-  if (pRes.data) data.projects = pRes.data;
-  if (eRes.data) data.events = eRes.data;
-  if (hRes.data) data.hobbies = hRes.data;
-  if (entRes.data) data.entries = entRes.data.map(e => ({ ...e, dateStr: e.date_str, oneWord: e.one_word }));
+    const n = new Date();
+    const todayStr = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    let isNewDay = false;
 
-  const n = new Date();
-  const todayStr = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-  let isNewDay = false;
-
-  if (tsRes.data) {
-    const lastUpdate = tsRes.data.updated_at ? tsRes.data.updated_at.split('T')[0] : '';
-    if (lastUpdate !== todayStr) {
-      isNewDay = true;
-      console.log("New day detected. Resetting daily metrics.");
+    if (tsRes.data) {
+      const lastUpdate = tsRes.data.updated_at ? tsRes.data.updated_at.split('T')[0] : '';
+      if (lastUpdate !== todayStr) {
+        isNewDay = true;
+      } else {
+        data.today = { ...data.today, ...tsRes.data, oneWord: tsRes.data.one_word, mindGoal: tsRes.data.mind_goal };
+      }
     } else {
-      data.today = { ...data.today, ...tsRes.data, oneWord: tsRes.data.one_word };
+      isNewDay = true; 
     }
-  } else {
-    isNewDay = true; // First time use
-  }
 
-  if (sRes.data) {
-    data.socialData = {};
-    if (!isNewDay) {
-      sRes.data.forEach(row => data.socialData[row.app_id] = row.minutes);
+    if (sRes.data) {
+      data.socialData = {};
+      if (!isNewDay) {
+        sRes.data.forEach(row => data.socialData[row.app_id] = row.minutes);
+      } else {
+        db.from('social_data').delete().neq('app_id', 'dummy_to_allow_delete_all').then(() => console.log("Social data cleared for new day"));
+      }
+      
+      ['ig-slider', 'sl-slider', 'bk-slider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = data.socialData[id] || 0;
+      });
+      initSocialBars();
+    }
+
+    if (isNewDay) saveTodayState();
+    if (mRes.data) data.memories = mRes.data;
+
+    initBentoEffect();
+
+    try { initDates(); } catch(e) { console.error("initDates failed", e); }
+    try { initToday(); } catch(e) { console.error("initToday failed", e); }
+    
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+      const pageId = activePage.id.replace('page-', '');
+      showPage(pageId);
     } else {
-      // Clear social data in DB for the new day
-      db.from('social_data').delete().neq('app_id', 'dummy_to_allow_delete_all').then(() => console.log("Social data cleared for new day"));
+      const path = window.location.pathname;
+      if (path.includes('growth')) renderTasks();
+      if (path.includes('archive')) { renderLog(); renderEvents(); }
+      if (path.includes('memory')) renderMemories();
     }
     
-    // Always reset sliders to either loaded data or 0
-    ['ig-slider', 'sl-slider', 'bk-slider'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = data.socialData[id] || 0;
+    try { updateStreak(); } catch(e) { console.error("updateStreak failed", e); }
+  } catch (err) {
+    console.error("Critical error in loadData", err);
+    toast("Error loading data. Showing offline state.");
+  } finally {
+    initAnimations();
+    toast("Data loaded ✓");
+  }
+}
+
+// ========== SMOOTH SCROLL (LENIS) ==========
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  direction: 'vertical',
+  gestureDirection: 'vertical',
+  smooth: true,
+  mouseMultiplier: 1,
+  smoothTouch: false,
+  touchMultiplier: 2,
+  infinite: false,
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+// Export lenis to window for global access if needed
+window.lenis = lenis;
+
+// ========== PREMIUM ANIMATIONS (GSAP) ==========
+gsap.registerPlugin(ScrollTrigger);
+
+function initAnimations() {
+  // 1. Clean up old triggers
+  ScrollTrigger.getAll().forEach(t => t.kill());
+
+  // 2. Identify all elements to animate
+  const headerEls = gsap.utils.toArray("header h1, header p, .font-label-caps");
+  const bentoUnits = gsap.utils.toArray(".bento-unit");
+  const individualCards = gsap.utils.toArray(".bento-card, .card").filter(el => !el.closest('.bento-unit'));
+  const allButtons = gsap.utils.toArray("button:not(.nav-tabs button)");
+  
+  // 3. Reset state immediately
+  // We use visibility: "visible" to override the initial CSS hide once GSAP is in control
+  gsap.set([...headerEls, ...bentoUnits, ...individualCards, ...allButtons], { opacity: 0, y: 50, visibility: "visible", force3D: true });
+  document.body.classList.add('gsap-ready');
+
+  // 4. Hero Animation
+  gsap.to(headerEls, {
+    opacity: 1,
+    y: 0,
+    duration: 1,
+    stagger: 0.1,
+    ease: "power3.out"
+  });
+
+  // 5. Bento Units (Rows), Individual Cards, and Buttons
+  const mainContent = [...bentoUnits, ...individualCards, ...allButtons];
+  
+  mainContent.forEach((el, i) => {
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: 1,
+      ease: "power4.out",
+      scrollTrigger: {
+        trigger: el,
+        start: "top 95%",
+        toggleActions: "play none none none"
+      }
     });
-    initSocialBars();
-  }
+  });
 
-  if (isNewDay) {
-    // Save the new state with current timestamp to mark the start of the day
-    saveTodayState();
-  }
-
-  if (mRes.data) {
-    data.memories = mRes.data;
-  }
-
-  initDates();
-  initToday();
-  
-  // Detect current page from the active .page element
-  const activePage = document.querySelector('.page.active');
-  if (activePage) {
-    const pageId = activePage.id.replace('page-', '');
-    showPage(pageId);
-  } else {
-    showPage('today');
-  }
-  
-  updateStreak();
-  toast("Data loaded ✓");
+  // 6. Refresh ScrollTrigger to ensure all markers are correct
+  setTimeout(() => ScrollTrigger.refresh(), 100);
 }
 
 function initDates() {
   const n = new Date();
-  document.getElementById('hero-date').textContent = `${DD[n.getDay()]}, ${MM[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`;
-  document.getElementById('nav-date-display').textContent = `${DD[n.getDay()]}, ${MM[n.getMonth()]} ${n.getDate()}`;
+  const elDate = document.getElementById('hero-date');
+  if (elDate) elDate.textContent = `${DD[n.getDay()]}, ${MM[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`;
+  
+  const elNavDate = document.getElementById('nav-date-display');
+  if (elNavDate) elNavDate.textContent = `${DD[n.getDay()]}, ${MM[n.getMonth()]} ${n.getDate()}`;
+  
   const h = n.getHours();
-  document.getElementById('hero-greeting').textContent = h < 12 ? 'Good morning ✦' : h < 17 ? 'Good afternoon ✦' : 'Good evening ✦';
+  const elGreet = document.getElementById('hero-greeting');
+  if (elGreet) elGreet.textContent = h < 12 ? 'Good morning ✦' : h < 17 ? 'Good afternoon ✦' : 'Good evening ✦';
+  
   const iso = n.toISOString().split('T')[0];
-  ['t-due', 'e-date', 'p-deadline'].forEach(id => { const el = document.getElementById(id); if (el) el.value = iso; });
+  ['t-due', 'e-date', 'p-deadline', 'taskDate', 'eventDateTime', 'projectDateFrom', 'projectDateTo'].forEach(id => { 
+    const el = document.getElementById(id); 
+    if (el) el.value = iso; 
+  });
 }
 
 class ElasticSlider {
@@ -212,43 +292,63 @@ function initToday() {
   
   updateQS('rating', t.rating ? t.rating + '/10' : '—');
   
-  if (!elasticEnergy && document.getElementById('energy-wrap')) {
-    elasticEnergy = new ElasticSlider(document.getElementById('energy-wrap'), t.energy || 0, val => {
-      data.today.energy = val;
-      document.getElementById('energy-val').textContent = val;
-      saveTodayState();
-    });
-  } else if (elasticEnergy) {
-    elasticEnergy.setValue(t.energy || 0);
+  const energyWrap = document.getElementById('energy-wrap');
+  if (energyWrap) {
+    if (!elasticEnergy) {
+      elasticEnergy = new ElasticSlider(energyWrap, t.energy || 0, val => {
+        data.today.energy = val;
+        const vEl = document.getElementById('energy-val');
+        if (vEl) vEl.textContent = val;
+        saveTodayState();
+      });
+    } else {
+      elasticEnergy.setValue(t.energy || 0);
+    }
   }
-  if (document.getElementById('energy-val')) document.getElementById('energy-val').textContent = t.energy || 0;
+  const energyVal = document.getElementById('energy-val');
+  if (energyVal) energyVal.textContent = t.energy || 0;
   
-  if (!elasticFocus && document.getElementById('focus-wrap')) {
-    elasticFocus = new ElasticSlider(document.getElementById('focus-wrap'), t.focus || 0, val => {
-      data.today.focus = val;
-      document.getElementById('focus-val').textContent = val;
-      saveTodayState();
-    });
-  } else if (elasticFocus) {
-    elasticFocus.setValue(t.focus || 0);
+  const focusWrap = document.getElementById('focus-wrap');
+  if (focusWrap) {
+    if (!elasticFocus) {
+      elasticFocus = new ElasticSlider(focusWrap, t.focus || 0, val => {
+        data.today.focus = val;
+        const vEl = document.getElementById('focus-val');
+        if (vEl) vEl.textContent = val;
+        saveTodayState();
+      });
+    } else {
+      elasticFocus.setValue(t.focus || 0);
+    }
   }
-  if (document.getElementById('focus-val')) document.getElementById('focus-val').textContent = t.focus || 0;
+  const focusVal = document.getElementById('focus-val');
+  if (focusVal) focusVal.textContent = t.focus || 0;
 
-  if (t.remark) document.getElementById('daily-remark').value = t.remark; else document.getElementById('daily-remark').value = '';
-  if (t.gratitude) document.getElementById('gratitude').value = t.gratitude; else document.getElementById('gratitude').value = '';
-  if (t.oneWord) document.getElementById('one-word').value = t.oneWord; else document.getElementById('one-word').value = '';
+  const elRemark = document.getElementById('daily-remark');
+  if (elRemark) elRemark.value = t.remark || '';
+  
+  const elGrat = document.getElementById('gratitude');
+  if (elGrat) elGrat.value = t.gratitude || '';
+  
+  const elWord = document.getElementById('one-word');
+  if (elWord) elWord.value = t.oneWord || '';
+
   ['steps', 'water', 'sleep', 'exercise'].forEach(k => { 
     const el = document.getElementById('h-' + k);
     if (el) el.value = t[k] || (k === 'steps' ? '0' : k === 'water' ? '0L' : k === 'sleep' ? '0h' : '0m'); 
   });
   initVitalityBars();
-  if (t.productive) { 
-    document.getElementById('h-productive').value = t.productive; 
-    document.getElementById('qs-prod').textContent = t.productive + 'h'; 
-  } else {
-    document.getElementById('h-productive').value = '0'; 
-    document.getElementById('qs-prod').textContent = '0h';
-  }
+
+  const elProd = document.getElementById('h-productive');
+  const qsProd = document.getElementById('qs-prod');
+  if (elProd) elProd.value = t.productive || '0';
+  if (qsProd) qsProd.textContent = (t.productive || '0') + 'h';
+
+  const elMind = document.getElementById('h-mindfulness');
+  if (elMind) elMind.value = t.mindfulness || '0 Minutes';
+  
+  const elGoal = document.getElementById('h-mind-goal');
+  if (elGoal) elGoal.value = t.mindGoal || '150 Minutes';
 }
 
 // ========== NAV ==========
@@ -295,6 +395,9 @@ function showPage(name, btn) {
   if (name === 'memory') {
     renderMemories();
   }
+  
+  initBentoEffect();
+  initAnimations();
 }
 
 // ========== MOOD / WEATHER / RATING ==========
@@ -305,7 +408,8 @@ async function saveTodayState() {
     updated_at: new Date().toISOString(),
     mood: ts.mood, weather: ts.weather, rating: ts.rating, energy: ts.energy, focus: ts.focus, stress: ts.stress,
     remark: ts.remark, gratitude: ts.gratitude, one_word: ts.oneWord,
-    steps: ts.steps, water: ts.water, sleep: ts.sleep, exercise: ts.exercise, productive: ts.productive
+    steps: ts.steps, water: ts.water, sleep: ts.sleep, exercise: ts.exercise, productive: ts.productive,
+    mindfulness: ts.mindfulness, mind_goal: ts.mindGoal
   };
   await db.from('today_state').upsert(payload);
 }
@@ -330,6 +434,11 @@ function setRating(n, doSave = true) {
   if (doSave) saveTodayState();
 }
 function updateSlider(sid, vid, key) { const v = document.getElementById(sid).value; document.getElementById(vid).textContent = v; data.today[key] = v; saveTodayState(); }
+function updateMindfulness() {
+  data.today.mindfulness = document.getElementById('h-mindfulness').value;
+  data.today.mindGoal = document.getElementById('h-mind-goal').value;
+  saveTodayState();
+}
 function updateHealth() { 
   ['steps', 'water', 'sleep', 'exercise'].forEach(k => { 
     const val = document.getElementById('h-' + k).value;
@@ -948,7 +1057,7 @@ function drawLineSVG(svgId, pts, color) {
   const rect = svg.parentElement?.getBoundingClientRect() || { width: 300, height: 160 };
   const W = Math.max(rect.width, 200), H = 160;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = '';
-  if (!pts || pts.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#486448" font-size="11" font-style="italic" font-family="Lora,serif">Not enough data yet</text>`; return; }
+  if (!pts || pts.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#88ab80" font-size="11" font-style="italic" font-family="Lora,serif">Not enough data yet</text>`; return; }
   const p = { t: 20, r: 12, b: 28, l: 28 };
   const iw = W - p.l - p.r, ih = H - p.t - p.b;
   const maxV = Math.max(...pts.map(x => x.y), 1);
@@ -957,7 +1066,7 @@ function drawLineSVG(svgId, pts, color) {
   const pathD = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
   const fillD = pathD + ` L${xs[xs.length - 1].toFixed(1)},${(p.t + ih).toFixed(1)} L${p.l},${(p.t + ih).toFixed(1)} Z`;
   const gid = 'g' + Math.random().toString(36).slice(2);
-  svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.22"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${fillD}" fill="url(#${gid})"/><path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${xs.map((x, i) => `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="${color}"/><text x="${x.toFixed(1)}" y="${(H - 6).toFixed(1)}" text-anchor="middle" font-size="9" fill="#486448">${pts[i].label}</text>`).join('')}`;
+  svg.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.22"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${fillD}" fill="url(#${gid})"/><path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${xs.map((x, i) => `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="${color}"/><text x="${x.toFixed(1)}" y="${(H - 6).toFixed(1)}" text-anchor="middle" font-size="9" fill="#88ab80">${pts[i].label}</text>`).join('')}`;
 }
 
 function renderTrendChart() {
@@ -1056,7 +1165,7 @@ function renderMemories() {
     if (idx % 5 === 3) spanClass = 'col-span-1 md:col-span-2';
 
     const card = document.createElement('div');
-    card.className = `glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500 ${spanClass}`;
+    card.className = `glass-panel rounded-xl overflow-hidden flex flex-col h-full group transition-all duration-500 bento-card ${spanClass}`;
     
     let imgHtml = '';
     if (mem.image_url) {
@@ -1092,6 +1201,7 @@ function renderMemories() {
     `;
     container.appendChild(card);
   });
+  initBentoEffect();
 }
 
 function getOrdinal(n) {
@@ -1207,4 +1317,34 @@ function updateStreak() {
   const goal = 30;
   const pct = Math.min(100, (streak / goal) * 100);
   elPath.setAttribute('stroke-dasharray', `${pct}, 100`);
+}
+
+function initBentoEffect() {
+  const cards = document.querySelectorAll('.bento-card');
+  cards.forEach(card => {
+    if (!card.querySelector('.bento-border')) {
+      const border = document.createElement('div');
+      border.className = 'bento-border';
+      card.appendChild(border);
+    }
+  });
+
+  if (!window.bentoListenerAdded) {
+    window.addEventListener('mousemove', (e) => {
+      // Use requestAnimationFrame for smoothness
+      requestAnimationFrame(() => {
+        const cards = document.querySelectorAll('.bento-card');
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          // Use viewport-relative coordinates consistently
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+        });
+      });
+    });
+    window.bentoListenerAdded = true;
+  }
 }
