@@ -11,6 +11,19 @@ body:not(.gsap-ready) button:not(.nav-tabs button) {
   visibility: hidden;
 }
 
+/* SPA Page Management */
+.page {
+  display: none;
+}
+.page.active {
+  display: block;
+}
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
     --bg:         #0c120e;
     --surface:    #141c16;
     --surface2:   #1a241d;

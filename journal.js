@@ -123,10 +123,9 @@ async function loadData() {
       const pageId = activePage.id.replace('page-', '');
       showPage(pageId);
     } else {
-      const path = window.location.pathname;
-      if (path.includes('growth')) renderTasks();
-      if (path.includes('archive')) { renderLog(); renderEvents(); }
-      if (path.includes('memory')) renderMemories();
+      // Check hash or default to today
+      const hash = window.location.hash.replace('#', '') || 'today';
+      showPage(hash);
     }
     
     try { updateStreak(); } catch(e) { console.error("updateStreak failed", e); }
@@ -137,6 +136,45 @@ async function loadData() {
     initAnimations();
     // Toast removed for cleaner experience
   }
+}
+
+// ========== SPA NAVIGATION ==========
+function showPage(pageId) {
+  const pages = document.querySelectorAll('.page');
+  const navLinks = document.querySelectorAll('nav a');
+  
+  // 1. Update Visibility
+  pages.forEach(p => p.classList.remove('active'));
+  const targetPage = document.getElementById('page-' + pageId);
+  if (targetPage) {
+    targetPage.classList.add('active');
+    window.location.hash = pageId;
+  }
+
+  // 2. Update Nav Active State
+  navLinks.forEach(link => {
+    link.classList.remove('text-amber-200', 'border-l-2', 'border-amber-200/50', 'active');
+    link.classList.add('text-stone-500');
+    if (link.getAttribute('onclick')?.includes(`'${pageId}'`)) {
+      link.classList.add('text-amber-200', 'border-l-2', 'border-amber-200/50', 'active');
+      link.classList.remove('text-stone-500');
+    }
+  });
+
+  // 3. Trigger Section-Specific Logic
+  if (pageId === 'growth') renderGrowthPage();
+  if (pageId === 'archive') { renderLog(); renderEvents(); }
+  if (pageId === 'memory') renderMemories();
+
+  // 4. Reset Scroll & Refresh Animations
+  window.scrollTo(0, 0);
+  if (window.lenis) window.lenis.scrollTo(0, { immediate: true });
+  
+  // Re-run animations for the new page
+  setTimeout(() => {
+    initAnimations();
+    ScrollTrigger.refresh();
+  }, 100);
 }
 
 // ========== SMOOTH SCROLL (LENIS) ==========
@@ -169,10 +207,10 @@ function initAnimations() {
   ScrollTrigger.getAll().forEach(t => t.kill());
 
   // 2. Identify all elements to animate
-  const headerEls = gsap.utils.toArray("header h1, header p, .font-label-caps");
+  const headerEls = gsap.utils.toArray("header h1, header p, header .font-label-caps, .section-header .font-label-caps");
   const bentoUnits = gsap.utils.toArray(".bento-unit");
   const individualCards = gsap.utils.toArray(".bento-card, .card").filter(el => !el.closest('.bento-unit'));
-  const allButtons = gsap.utils.toArray("button:not(.nav-tabs button)");
+  const allButtons = gsap.utils.toArray("button:not(.nav-tabs button):not(.bento-card button)");
   
   // 3. Reset state immediately
   // We use visibility: "visible" to override the initial CSS hide once GSAP is in control
@@ -407,21 +445,22 @@ function showPage(name, btn) {
   
   // Update sidebar active state
   document.querySelectorAll('nav a').forEach(a => {
-    a.classList.remove('active', 'text-amber-200', 'border-l-2', 'border-amber-200/50');
-    a.classList.add('text-stone-500');
-    
-    // Check if this link matches the current page name (either via onclick or href)
     const onclickText = a.getAttribute('onclick') || '';
     const hrefText = a.getAttribute('href') || '';
-    if (onclickText.includes(`'${name}'`) || hrefText.includes(`${name}.html`) || (name === 'today' && (hrefText.includes('journal (1).html') || hrefText === '/'))) {
-      a.classList.add('active', 'text-amber-200', 'border-l-2', 'border-amber-200/50');
-      a.classList.remove('text-stone-500');
+    const isTarget = onclickText.includes(`'${name}'`) || hrefText.includes(`${name}.html`) || (name === 'today' && (hrefText.includes('index.html') || hrefText === '/'));
+    
+    if (isTarget) {
+      a.classList.add('active', 'text-amber-200', 'border-amber-200/50', 'border-l-2');
+      a.classList.remove('text-stone-500', 'border-transparent');
+    } else {
+      a.classList.remove('active', 'text-amber-200', 'border-amber-200/50');
+      a.classList.add('text-stone-500', 'border-transparent');
     }
   });
   
   if (btn) {
-    btn.classList.add('active', 'text-amber-200', 'border-l-2', 'border-amber-200/50');
-    btn.classList.remove('text-stone-500');
+    btn.classList.add('active', 'text-amber-200', 'border-amber-200/50', 'border-l-2');
+    btn.classList.remove('text-stone-500', 'border-transparent');
   }
 
   if (name === 'growth') { 
@@ -1230,16 +1269,25 @@ function renderMemories() {
 
     card.innerHTML = `
       ${imgHtml}
-      <div class="p-8 flex flex-col flex-1 relative z-10 ${mem.image_url ? '-mt-10' : ''}">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">${dateStr}</span>
-          <button onclick="deleteMemory('${mem.id}')" class="text-stone-600 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
+      <div class="p-8 flex flex-col flex-grow relative z-10 text-center ${mem.image_url ? 'bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent -mt-20 pt-24' : ''}">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-8"></div>
+          <span class="font-label-caps text-[10px] text-stone-100 tracking-widest uppercase border-b border-stone-100/20 pb-1">${dateStr}</span>
+          <button onclick="deleteMemory('${mem.id}')" class="text-stone-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
         </div>
-        <h3 class="font-h3 text-h3 text-on-surface mb-6 ${mem.is_italic ? 'italic text-stone-300' : 'text-stone-200'}">${mem.content}</h3>
+        
+        <div class="flex-grow flex items-center justify-center">
+          <p class="font-newsreader text-xl leading-relaxed text-secondary ${mem.is_italic ? 'italic' : 'font-medium'}">
+            ${mem.content}
+          </p>
+        </div>
+        
         ${mem.tags ? `
-          <div class="mt-auto flex gap-2 flex-wrap">
+          <div class="flex flex-wrap justify-center gap-2 mt-8">
             ${mem.tags.split(',').map(tag => `
-              <span class="px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-[10px] uppercase flex items-center gap-1 bg-surface-container-low/50">
+              <span class="px-3 py-1 rounded-full border border-outline-variant/30 text-stone-400 font-label-caps text-[10px] uppercase flex items-center gap-1 bg-surface-container-low/30 backdrop-blur-sm">
                 ${tag.trim()}
               </span>
             `).join('')}
@@ -1259,11 +1307,18 @@ function getOrdinal(n) {
 
 async function addMemory() {
   const content = document.getElementById('m-content').value;
-  const imageUrl = document.getElementById('m-image').value;
+  let imageUrl = document.getElementById('m-image').value;
   const tags = document.getElementById('m-tags').value;
   const isItalic = document.getElementById('m-italic').checked;
+  const fileInput = document.getElementById('m-file');
 
   if (!content) { toast("Please enter a memory..."); return; }
+
+  // If there's a base64 preview, use it as the image_url
+  const previewImg = document.getElementById('m-preview');
+  if (previewImg.src && previewImg.src.startsWith('data:image')) {
+    imageUrl = previewImg.src;
+  }
 
   const newMem = {
     content,
@@ -1273,28 +1328,60 @@ async function addMemory() {
     created_at: new Date().toISOString()
   };
 
-  toast("Saving memory...");
+  toast("Preserving memory...");
   const { data: savedData, error } = await db.from('memories').insert(newMem).select();
   
   if (error) {
     console.error(error);
     toast("Error saving to database");
-    // Local fallback
     data.memories.unshift({ ...newMem, id: Date.now().toString() });
   } else if (savedData) {
     data.memories.unshift(savedData[0]);
   }
 
   renderMemories();
-  
-  // Clear inputs
+  clearMemoryForm();
+  toast("Memory captured ✓");
+  closeMemoryModal();
+}
+
+function handleMemoryFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    toast("Image too large. Please use < 2MB.");
+    input.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const previewContainer = document.getElementById('m-preview-container');
+    const previewImg = document.getElementById('m-preview');
+    previewImg.src = e.target.result;
+    previewContainer.classList.remove('hidden');
+    // Clear URL input if file is chosen
+    document.getElementById('m-image').value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearMemoryFile() {
+  const input = document.getElementById('m-file');
+  const previewContainer = document.getElementById('m-preview-container');
+  const previewImg = document.getElementById('m-preview');
+  input.value = '';
+  previewImg.src = '';
+  previewContainer.classList.add('hidden');
+}
+
+function clearMemoryForm() {
   document.getElementById('m-content').value = '';
   document.getElementById('m-image').value = '';
   document.getElementById('m-tags').value = '';
   document.getElementById('m-italic').checked = false;
-  
-  toast("Memory captured ✓");
-  closeMemoryModal();
+  clearMemoryFile();
 }
 
 async function deleteMemory(id) {
@@ -1396,3 +1483,184 @@ function initBentoEffect() {
     window.bentoListenerAdded = true;
   }
 }
+
+// ========== GROWTH PAGE HELPERS ==========
+async function addTaskV2() {
+    const name = document.getElementById('taskName').value;
+    const date = document.getElementById('taskDate').value;
+    const priority = document.getElementById('taskPriority').value;
+    const notes = document.getElementById('taskDesc').value;
+    
+    if (!name) { toast("Enter task name"); return; }
+    
+    const task = { name, cat: 'task', priority, notes, due: date, done: false, date: date || new Date().toISOString().split('T')[0] };
+    toast("Sowing task...");
+    const { data: res, error } = await db.from('tasks').insert(task).select();
+    if (!error && res) {
+        data.tasks.push(res[0]);
+        renderGrowthPage();
+        toast("Task added ✓");
+        ['taskName', 'taskDate', 'taskDesc'].forEach(id => document.getElementById(id).value = '');
+    }
+}
+
+async function addEventV2() {
+    const name = document.getElementById('eventName').value;
+    const datetime = document.getElementById('eventDateTime').value;
+    const desc = document.getElementById('eventDesc').value;
+    if (!name) { toast("Enter event name"); return; }
+    
+    const dt = datetime ? new Date(datetime) : new Date();
+    const event = { name, date: dt.toISOString().split('T')[0], time: dt.toTimeString().split(' ')[0], notes: desc, cat: 'event' };
+    toast("Marking event...");
+    const { data: res, error } = await db.from('events').insert(event).select();
+    if (!error && res) {
+        data.events.push(res[0]);
+        renderGrowthPage();
+        toast("Event added ✓");
+        ['eventName', 'eventDateTime', 'eventDesc'].forEach(id => document.getElementById(id).value = '');
+    }
+}
+
+async function addProjectV2() {
+    const name = document.getElementById('projectName').value;
+    const dateTo = document.getElementById('projectDateTo').value;
+    const pct = document.getElementById('projectCompletion').value;
+    const desc = document.getElementById('projectDesc').value;
+    if (!name) { toast("Enter project name"); return; }
+    
+    const project = { name, "desc": desc, status: 'active', pct: parseInt(pct), deadline: dateTo };
+    toast("Launching project...");
+    const { data: res, error } = await db.from('projects').insert(project).select();
+    if (!error && res) {
+        data.projects.push(res[0]);
+        renderGrowthPage();
+        toast("Project added ✓");
+        ['projectName', 'projectDateFrom', 'projectDateTo', 'projectDesc'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('projectCompletion').value = 0;
+        document.getElementById('completionValue').innerText = '0%';
+    }
+}
+
+function toggleCompleted() {
+    const container = document.getElementById('completedContainer');
+    const chevron = document.getElementById('completedChevron');
+    if (!container || !chevron) return;
+    const isHidden = container.classList.contains('hidden');
+    if (isHidden) {
+        container.classList.remove('hidden');
+        container.classList.add('flex');
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        container.classList.add('hidden');
+        container.classList.remove('flex');
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+function renderGrowthPage() {
+    generateWeeklyCalendar();
+    renderUpcomings();
+}
+
+function generateWeeklyCalendar() {
+    const calendar = document.getElementById('weekCalendar');
+    if (!calendar) return;
+    calendar.innerHTML = '';
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+    
+    for (let i = 0; i < 7; i++) {
+        const cur = new Date(start);
+        cur.setDate(start.getDate() + i);
+        const isToday = cur.toDateString() === today.toDateString();
+        const iso = cur.toISOString().split('T')[0];
+        const hasActivity = data.tasks.some(t => t.due === iso) || data.events.some(e => e.date === iso);
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = `flex-1 flex flex-col items-center p-4 rounded-xl border transition-all ${isToday ? 'bg-secondary/10 border-secondary/40 text-secondary' : 'bg-white/5 border-white/10 text-on-surface-variant'}`;
+        dayDiv.innerHTML = `
+            <span class="text-[10px] uppercase tracking-widest mb-1 font-semibold">${cur.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+            <span class="text-lg font-bold mb-2">${cur.getDate()}</span>
+            ${hasActivity ? '<div class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(230,193,131,0.6)]"></div>' : '<div class="w-1.5 h-1.5"></div>'}
+        `;
+        calendar.appendChild(dayDiv);
+    }
+}
+
+function renderUpcomings() {
+    const upContainer = document.getElementById('upcomingContainer');
+    const compContainer = document.getElementById('completedContainer');
+    if (!upContainer || !compContainer) return;
+
+    upContainer.innerHTML = '';
+    compContainer.innerHTML = '';
+
+    const allItems = [
+        ...data.tasks.map(t => ({...t, type: 'task'})),
+        ...data.events.map(e => ({...e, type: 'event'})),
+        ...data.projects.map(p => ({...p, type: 'project'}))
+    ];
+
+    allItems.sort((a, b) => new Date(a.due || a.date || a.deadline) - new Date(b.due || b.date || b.deadline));
+
+    const upcoming = allItems.filter(i => !i.done && i.status !== 'done');
+    const completed = allItems.filter(i => i.done || i.status === 'done');
+
+    if (upcoming.length === 0) {
+        upContainer.innerHTML = '<div class="text-center text-on-surface-variant italic py-8">No upcomings yet.</div>';
+    } else {
+        upcoming.forEach(item => upContainer.appendChild(createItemEl(item)));
+    }
+
+    if (completed.length === 0) {
+        compContainer.innerHTML = '<div class="text-center text-on-surface-variant italic py-8">No completed items yet.</div>';
+    } else {
+        completed.forEach(item => compContainer.appendChild(createItemEl(item)));
+    }
+}
+
+function createItemEl(i) {
+    const el = document.createElement('div');
+    el.className = `bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 group hover:bg-white/10 transition-all ${i.done || i.status === 'done' ? 'opacity-60' : ''}`;
+    
+    let color = i.type === 'task' ? '#bdcabe' : i.type === 'event' ? '#9f7aea' : '#38b2ac';
+    if (i.priority === 'high') color = '#f87171';
+    
+    el.innerHTML = `
+        <div class="w-1 h-8 rounded-full" style="background-color: ${color}"></div>
+        <div class="flex-grow">
+            <div class="flex items-center gap-2">
+                <span class="text-on-surface font-medium">${i.name}</span>
+                <span class="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border" style="border-color: ${color}44; color: ${color}; background: ${color}11">${i.type}</span>
+            </div>
+            <div class="text-xs text-on-surface-variant mt-1">${i.due || i.date || i.deadline || 'No date'}</div>
+        </div>
+        ${i.type === 'project' ? `<div class="text-xs font-semibold text-secondary">${i.pct}%</div>` : ''}
+        <button onclick="toggleItemDone('${i.id}', '${i.type}')" class="text-on-surface-variant hover:text-secondary transition-colors">
+            <span class="material-symbols-outlined">${i.done || i.status === 'done' ? 'undo' : 'check_circle'}</span>
+        </button>
+    `;
+    return el;
+}
+
+async function toggleItemDone(id, type) {
+    toast("Updating...");
+    if (type === 'task') {
+        const t = data.tasks.find(t => t.id === id);
+        if (t) {
+            t.done = !t.done;
+            await db.from('tasks').update({ done: t.done }).eq('id', id);
+        }
+    } else if (type === 'project') {
+        const p = data.projects.find(p => p.id === id);
+        if (p) {
+            p.status = p.status === 'done' ? 'active' : 'done';
+            await db.from('projects').update({ status: p.status, pct: p.status === 'done' ? 100 : p.pct }).eq('id', id);
+        }
+    }
+    renderGrowthPage();
+    toast("Progress updated ✓");
+}
+
