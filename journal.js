@@ -7,7 +7,7 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.addEventListener('DOMContentLoaded', loadData);
 
 // ========== DATA ==========
-let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '', water: '', sleep: '', exercise: '', productive: '' } };
+let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '0', water: '0L', sleep: '0h', exercise: '0m', productive: '0' } };
 
 const DD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MM = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -32,17 +32,42 @@ async function loadData() {
   if (hRes.data) data.hobbies = hRes.data;
   if (entRes.data) data.entries = entRes.data.map(e => ({ ...e, dateStr: e.date_str, oneWord: e.one_word }));
 
+  const n = new Date();
+  const todayStr = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  let isNewDay = false;
+
+  if (tsRes.data) {
+    const lastUpdate = tsRes.data.updated_at ? tsRes.data.updated_at.split('T')[0] : '';
+    if (lastUpdate !== todayStr) {
+      isNewDay = true;
+      console.log("New day detected. Resetting daily metrics.");
+    } else {
+      data.today = { ...data.today, ...tsRes.data, oneWord: tsRes.data.one_word };
+    }
+  } else {
+    isNewDay = true; // First time use
+  }
+
   if (sRes.data) {
     data.socialData = {};
-    sRes.data.forEach(row => data.socialData[row.app_id] = row.minutes);
-    for (let id in data.socialData) {
-      if (document.getElementById(id)) document.getElementById(id).value = data.socialData[id];
+    if (!isNewDay) {
+      sRes.data.forEach(row => data.socialData[row.app_id] = row.minutes);
+    } else {
+      // Clear social data in DB for the new day
+      db.from('social_data').delete().neq('app_id', 'dummy_to_allow_delete_all').then(() => console.log("Social data cleared for new day"));
     }
+    
+    // Always reset sliders to either loaded data or 0
+    ['ig-slider', 'sl-slider', 'bk-slider'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = data.socialData[id] || 0;
+    });
     initSocialBars();
   }
 
-  if (tsRes.data) {
-    data.today = { ...data.today, ...tsRes.data, oneWord: tsRes.data.one_word };
+  if (isNewDay) {
+    // Save the new state with current timestamp to mark the start of the day
+    saveTodayState();
   }
 
   if (mRes.data) {
@@ -61,6 +86,7 @@ async function loadData() {
     showPage('today');
   }
   
+  updateStreak();
   toast("Data loaded ✓");
 }
 
@@ -167,8 +193,24 @@ let elasticEnergy, elasticFocus;
 
 function initToday() {
   const t = data.today;
-  if (t.rating) setRating(t.rating, false);
-  if (t.mood) { document.querySelectorAll('.mood-btn').forEach(b => { if (b.textContent === t.mood) b.classList.add('selected'); }); document.getElementById('qs-mood').textContent = t.mood; }
+  setRating(t.rating || 0, false);
+  
+  const updateQS = (key, val) => {
+    const el = document.getElementById('qs-' + key);
+    if (el) el.textContent = val;
+    const sEl = document.getElementById('sidebar-qs-' + key);
+    if (sEl) sEl.textContent = val;
+  };
+
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  if (t.mood) { 
+    document.querySelectorAll('.mood-btn').forEach(b => { if (b.textContent.includes(t.mood)) b.classList.add('selected'); }); 
+    updateQS('mood', t.mood);
+  } else {
+    updateQS('mood', '—');
+  }
+  
+  updateQS('rating', t.rating ? t.rating + '/10' : '—');
   
   if (!elasticEnergy && document.getElementById('energy-wrap')) {
     elasticEnergy = new ElasticSlider(document.getElementById('energy-wrap'), t.energy || 0, val => {
@@ -192,12 +234,21 @@ function initToday() {
   }
   if (document.getElementById('focus-val')) document.getElementById('focus-val').textContent = t.focus || 0;
 
-  if (t.remark) document.getElementById('daily-remark').value = t.remark;
-  if (t.gratitude) document.getElementById('gratitude').value = t.gratitude;
-  if (t.oneWord) document.getElementById('one-word').value = t.oneWord;
-  ['steps', 'water', 'sleep', 'exercise'].forEach(k => { if (t[k]) document.getElementById('h-' + k).value = t[k]; });
+  if (t.remark) document.getElementById('daily-remark').value = t.remark; else document.getElementById('daily-remark').value = '';
+  if (t.gratitude) document.getElementById('gratitude').value = t.gratitude; else document.getElementById('gratitude').value = '';
+  if (t.oneWord) document.getElementById('one-word').value = t.oneWord; else document.getElementById('one-word').value = '';
+  ['steps', 'water', 'sleep', 'exercise'].forEach(k => { 
+    const el = document.getElementById('h-' + k);
+    if (el) el.value = t[k] || (k === 'steps' ? '0' : k === 'water' ? '0L' : k === 'sleep' ? '0h' : '0m'); 
+  });
   initVitalityBars();
-  if (t.productive) { document.getElementById('h-productive').value = t.productive; document.getElementById('qs-prod').textContent = t.productive + 'h'; }
+  if (t.productive) { 
+    document.getElementById('h-productive').value = t.productive; 
+    document.getElementById('qs-prod').textContent = t.productive + 'h'; 
+  } else {
+    document.getElementById('h-productive').value = '0'; 
+    document.getElementById('qs-prod').textContent = '0h';
+  }
 }
 
 // ========== NAV ==========
@@ -259,14 +310,23 @@ async function saveTodayState() {
   await db.from('today_state').upsert(payload);
 }
 
-function selectMood(btn, emoji) { document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); data.today.mood = emoji; document.getElementById('qs-mood').textContent = emoji; saveTodayState(); }
+function selectMood(btn, emoji) { 
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected')); 
+  btn.classList.add('selected'); 
+  data.today.mood = emoji; 
+  if (document.getElementById('qs-mood')) document.getElementById('qs-mood').textContent = emoji;
+  if (document.getElementById('sidebar-qs-mood')) document.getElementById('sidebar-qs-mood').textContent = emoji;
+  saveTodayState(); 
+}
 function selectWeather(btn, emoji, label) { document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); data.today.weather = emoji + ' ' + label; saveTodayState(); }
 function setRating(n, doSave = true) {
   data.today.rating = n;
   document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('filled', i < n));
   const L = ['', 'Terrible', 'Bad', 'Poor', 'Meh', 'Okay', 'Good', 'Great', 'Excellent', 'Amazing', 'Perfect 🌿'];
-  document.getElementById('rating-label').textContent = `${n}/10 — ${L[n]}`;
-  document.getElementById('qs-rating').textContent = n + '/10';
+  document.getElementById('rating-label').textContent = n > 0 ? `${n}/10 — ${L[n]}` : 'Pick a star to rate';
+  const val = n > 0 ? n + '/10' : '—';
+  if (document.getElementById('qs-rating')) document.getElementById('qs-rating').textContent = val;
+  if (document.getElementById('sidebar-qs-rating')) document.getElementById('sidebar-qs-rating').textContent = val;
   if (doSave) saveTodayState();
 }
 function updateSlider(sid, vid, key) { const v = document.getElementById(sid).value; document.getElementById(vid).textContent = v; data.today[key] = v; saveTodayState(); }
@@ -416,7 +476,13 @@ async function clearCompleted() {
   if (ids.length) await db.from('tasks').delete().in('id', ids);
 }
 function filterTasks(f) { taskFilter = f; renderTasks(); }
-function updateTaskCount() { const done = data.tasks.filter(t => t.done).length, total = data.tasks.length; const el = document.getElementById('task-count'); if (el) el.textContent = `${done}/${total} done`; document.getElementById('qs-tasks').textContent = done; }
+function updateTaskCount() { 
+  const done = data.tasks.filter(t => t.done).length, total = data.tasks.length; 
+  const el = document.getElementById('task-count'); 
+  if (el) el.textContent = `${done}/${total} done`; 
+  if (document.getElementById('qs-tasks')) document.getElementById('qs-tasks').textContent = done;
+  if (document.getElementById('sidebar-qs-tasks')) document.getElementById('sidebar-qs-tasks').textContent = done;
+}
 function taskHTML(t, showToggle = true) {
   return `
     <div class="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center gap-4 group transition-all hover:bg-white/10 ${t.done ? 'opacity-60' : ''}">
@@ -768,6 +834,8 @@ function updateScreenRing() {
   
   const qsScreen = document.getElementById('qs-screen');
   if (qsScreen) qsScreen.textContent = hours + 'h';
+  const sidebarScreen = document.getElementById('sidebar-qs-screen');
+  if (sidebarScreen) sidebarScreen.textContent = hours + 'h';
 
   const goal = parseFloat(document.getElementById('screen-goal')?.value || 6) * 60;
   const ringCircle = document.getElementById('ring-circle');
@@ -812,7 +880,7 @@ async function saveTodayEntry() {
 
   const idx = data.entries.findIndex(e => e.date === iso);
   if (idx >= 0) data.entries[idx] = entry; else data.entries.unshift(entry);
-  buildCalStrip(); renderTrendChart(); toast("Entry saved! ✨");
+  buildCalStrip(); renderTrendChart(); updateStreak(); toast("Entry saved! ✨");
 
   await db.from('entries').upsert({
     date: iso,
@@ -1100,4 +1168,43 @@ function closeMemoryModal() {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }
+}
+
+function updateStreak() {
+  const elNum = document.getElementById('streak-num');
+  const elPath = document.getElementById('streak-path');
+  if (!elNum || !elPath) return;
+
+  const dates = [...new Set(data.entries.map(e => e.date))].sort().reverse();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const todayStr = today.toISOString().split('T')[0];
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  let streak = 0;
+  if (dates.length > 0) {
+    if (dates[0] === todayStr || dates[0] === yesterdayStr) {
+      streak = 1;
+      let current = new Date(dates[0] + 'T00:00:00');
+      for (let i = 1; i < dates.length; i++) {
+        let nextExpected = new Date(current);
+        nextExpected.setDate(nextExpected.getDate() - 1);
+        let nextExpectedStr = nextExpected.toISOString().split('T')[0];
+        if (dates[i] === nextExpectedStr) {
+          streak++;
+          current = nextExpected;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  elNum.textContent = streak;
+  const goal = 30;
+  const pct = Math.min(100, (streak / goal) * 100);
+  elPath.setAttribute('stroke-dasharray', `${pct}, 100`);
 }

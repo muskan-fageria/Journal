@@ -123,15 +123,15 @@ nav, main, .page { display: block; }
 <div class="px-8 flex flex-col gap-6 mt-8 border-t border-white/5 pt-8">
   <div class="flex flex-col gap-1">
     <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Mood</span>
-    <span id="qs-mood" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    <span id="sidebar-qs-mood" class="text-sm text-stone-200 font-newsreader italic">—</span>
   </div>
   <div class="flex flex-col gap-1">
     <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Focus</span>
-    <span id="qs-rating" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    <span id="sidebar-qs-rating" class="text-sm text-stone-200 font-newsreader italic">—</span>
   </div>
   <div class="flex flex-col gap-1">
     <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Tasks</span>
-    <span id="qs-tasks" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    <span id="sidebar-qs-tasks" class="text-sm text-stone-200 font-newsreader italic">—</span>
   </div>
 </div>
 <div class="px-8 mt-auto">
@@ -363,10 +363,10 @@ nav, main, .page { display: block; }
           <div class="relative w-32 h-32 flex items-center justify-center">
             <svg class="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewBox="0 0 36 36">
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6c183" stroke-dasharray="100, 100" stroke-dashoffset="25" stroke-width="2"></path>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6c183" stroke-dasharray="0, 100" stroke-dashoffset="0" stroke-width="2" id="streak-path"></path>
             </svg>
             <div class="flex flex-col items-center text-center">
-              <span class="font-h2 text-3xl text-on-surface">12</span>
+              <span class="font-h2 text-3xl text-on-surface" id="streak-num">0</span>
               <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
             </div>
           </div>
