@@ -19,6 +19,15 @@
 <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<!-- INTRO SPLASH -->
+<div id="intro-splash" class="fixed inset-0 z-[1000] bg-stone-950 flex items-center justify-center overflow-hidden">
+  <video id="intro-video" class="w-full h-full object-cover" muted playsinline>
+    <source src="loading-video.mp4" type="video/mp4">
+  </video>
+  <button id="skip-intro" class="absolute bottom-8 right-8 font-label-caps text-[10px] text-white/20 hover:text-white/60 uppercase tracking-[0.4em] transition-all opacity-0">Skip</button>
+</div>
+
 <script id="tailwind-config">
 tailwind.config = {
     darkMode: "class",

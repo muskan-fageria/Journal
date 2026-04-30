@@ -3,8 +3,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ========== BOOT & LOAD ==========
-// Load data immediately on page load
-window.addEventListener('DOMContentLoaded', loadData);
+// Run intro sequence on page load
+window.addEventListener('DOMContentLoaded', runIntroSequence);
 
 // ========== DATA ==========
 let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '0', water: '0L', sleep: '0h', exercise: '0m', productive: '0', mindfulness: '0 Minutes', mindGoal: '150 Minutes' } };
@@ -12,8 +12,56 @@ let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memo
 const DD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MM = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+// ========== INTRO SEQUENCE ==========
+function runIntroSequence() {
+  const splash = document.getElementById('intro-splash');
+  const video = document.getElementById('intro-video');
+  const skipBtn = document.getElementById('skip-intro');
+
+  if (!splash) {
+    loadData();
+    return;
+  }
+
+  if (sessionStorage.getItem('introPlayed')) {
+    splash.style.display = 'none';
+    loadData();
+    return;
+  }
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      sessionStorage.setItem('introPlayed', 'true');
+      finishIntro();
+    }
+  });
+
+  gsap.set(splash, { opacity: 1 });
+  
+  // Just show video and fade in skip button
+  tl.to(skipBtn, { opacity: 1, duration: 1 }, 1);
+
+  video.play().catch(e => console.log("Video autoplay blocked", e));
+  video.onended = () => tl.play();
+
+  const finishIntro = () => {
+    // Start loading data immediately so it's ready when splash fades
+    loadData(); 
+
+    gsap.to(splash, {
+      opacity: 0,
+      duration: 0.8,
+      ease: "power2.inOut",
+      onComplete: () => {
+        splash.remove();
+      }
+    });
+  };
+
+  skipBtn.onclick = finishIntro;
+}
+
 async function loadData() {
-  toast("Loading data...");
   try {
     const [tRes, pRes, eRes, hRes, entRes, sRes, tsRes, mRes] = await Promise.all([
       db.from('tasks').select('*'),
@@ -87,7 +135,7 @@ async function loadData() {
     toast("Error loading data. Showing offline state.");
   } finally {
     initAnimations();
-    toast("Data loaded ✓");
+    // Toast removed for cleaner experience
   }
 }
 
@@ -128,16 +176,16 @@ function initAnimations() {
   
   // 3. Reset state immediately
   // We use visibility: "visible" to override the initial CSS hide once GSAP is in control
-  gsap.set([...headerEls, ...bentoUnits, ...individualCards, ...allButtons], { opacity: 0, y: 50, visibility: "visible", force3D: true });
+  gsap.set([...headerEls, ...bentoUnits, ...individualCards, ...allButtons], { opacity: 0, y: 25, visibility: "visible", force3D: true });
   document.body.classList.add('gsap-ready');
 
   // 4. Hero Animation
   gsap.to(headerEls, {
     opacity: 1,
     y: 0,
-    duration: 1,
-    stagger: 0.1,
-    ease: "power3.out"
+    duration: 0.8,
+    stagger: 0.05,
+    ease: "power2.out"
   });
 
   // 5. Bento Units (Rows), Individual Cards, and Buttons
@@ -147,8 +195,8 @@ function initAnimations() {
     gsap.to(el, {
       opacity: 1,
       y: 0,
-      duration: 1,
-      ease: "power4.out",
+      duration: 0.8,
+      ease: "power3.out",
       scrollTrigger: {
         trigger: el,
         start: "top 95%",
