@@ -1861,7 +1861,6 @@ async function addMemory() {
     image_url: finalImageUrl || null,
     tags: tags || null,
     is_italic: isItalic,
-    user_email: window.currentUserEmail,
     created_at: new Date().toISOString()
   };
 
@@ -1869,10 +1868,12 @@ async function addMemory() {
   const { data: savedData, error } = await db.from('memories').insert(newMem).select();
   
   if (error) {
-    console.error(error);
-    toast("Error saving to database");
-    data.memories.unshift({ ...newMem, id: Date.now().toString() });
-  } else if (savedData) {
+    console.error('Memory insert error:', error);
+    toast("Error saving memory: " + error.message);
+    return;
+  }
+  
+  if (savedData) {
     data.memories.unshift(savedData[0]);
   }
 
