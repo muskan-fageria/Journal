@@ -45,12 +45,14 @@ function runIntroSequence() {
   const skipBtn = document.getElementById('skip-intro');
 
   if (!splash) {
+    document.body.classList.add('app-revealed');
     checkAuthAndLoad();
     return;
   }
 
   if (sessionStorage.getItem('introPlayed')) {
     splash.style.display = 'none';
+    document.body.classList.add('app-revealed');
     checkAuthAndLoad();
     return;
   }
@@ -80,6 +82,7 @@ function runIntroSequence() {
       ease: "power2.inOut",
       onComplete: () => {
         splash.remove();
+        document.body.classList.add('app-revealed');
       }
     });
   };

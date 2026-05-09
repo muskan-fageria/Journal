@@ -54,6 +54,17 @@ body:not(.gsap-ready) button:not(.nav-tabs button) {
   
   body.modal-open { overflow: hidden; }
 
+  /* FOUC Cloak — hide main UI until intro finishes */
+  body:not(.app-revealed) > nav,
+  body:not(.app-revealed) > main,
+  body:not(.app-revealed) > .toast,
+  body:not(.app-revealed) > #login-splash {
+    visibility: hidden;
+  }
+  #intro-splash {
+    opacity: 1;
+  }
+
   /* NAV */
   nav{position:sticky;top:0;z-index:100;background:rgba(12,18,14,0.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 2rem;}
   .nav-inner{max-width:1340px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;}
