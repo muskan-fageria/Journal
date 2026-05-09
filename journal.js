@@ -9,6 +9,7 @@ window.addEventListener('DOMContentLoaded', runIntroSequence);
 // ========== DATA ==========
 let data = { tasks: [], projects: [], events: [], hobbies: [], entries: [], memories: [], socialData: {}, today: { mood: '', weather: '', rating: 0, energy: 0, focus: 0, stress: 0, remark: '', gratitude: '', oneWord: '', steps: '0', water: '0L', sleep: '0h', exercise: '0m', productive: '0', mindfulness: '0 Minutes', mindGoal: '150 Minutes' } };
 let currentMemoryId = null;
+let projectCollapseState = {}; // NEW: Track which projects are collapsed
 
 const DD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MM = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -2154,6 +2155,11 @@ function createItemEl(i) {
             </div>
             ${i.type === 'project' ? `<div class="text-xs font-semibold text-secondary">${i.pct}%</div>` : ''}
             <div class="flex items-center gap-2">
+                ${i.type === 'project' ? `
+                <button onclick="toggleProjectCollapse('${i.id}')" class="text-on-surface-variant hover:text-stone-100 transition-all transform ${projectCollapseState[i.id] ? '-rotate-90' : ''}" title="Toggle Tasks">
+                    <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                </button>
+                ` : ''}
                 <button onclick="toggleItemDone('${i.id}', '${i.type}')" class="text-on-surface-variant hover:text-secondary transition-colors" title="Toggle Status">
                     <span class="material-symbols-outlined">${i.done || i.status === 'done' ? 'undo' : 'check_circle'}</span>
                 </button>
@@ -2168,7 +2174,7 @@ function createItemEl(i) {
     if (i.type === 'project') {
         const todos = i.todos || [];
         
-        let todosHtml = '<div class="mt-1 flex flex-col gap-2 pl-5 border-l-2 border-white/5">';
+        let todosHtml = `<div id="project-todos-${i.id}" class="mt-1 flex flex-col gap-2 pl-5 border-l-2 border-white/5 transition-all duration-300 ${projectCollapseState[i.id] ? 'hidden' : ''}">`;
         
         todos.forEach((todo, index) => {
             todosHtml += `
@@ -2223,11 +2229,10 @@ async function addProjectTodo(projectId) {
     renderGrowthPage();
 }
 
-async function toggleProjectTodo(projectId, todoIndex) {
+async function toggleProjectTodo(projectId, index) {
     const p = data.projects.find(p => p.id === projectId);
-    if (!p || !p.todos || !p.todos[todoIndex]) return;
-    
-    p.todos[todoIndex].done = !p.todos[todoIndex].done;
+    if (!p || !p.todos) return;
+    p.todos[index].done = !p.todos[index].done;
     
     // Auto calculate pct
     const total = p.todos.length;
@@ -2235,10 +2240,14 @@ async function toggleProjectTodo(projectId, todoIndex) {
     p.pct = Math.round((completed / total) * 100);
     if (p.pct === 100) p.status = 'done';
     else p.status = 'active';
-    
-    toast("Updating progress...");
+
+    renderUpcomings();
     await db.from('projects').update({ todos: p.todos, pct: p.pct, status: p.status }).eq('id', projectId);
-    renderGrowthPage();
+}
+
+function toggleProjectCollapse(projectId) {
+    projectCollapseState[projectId] = !projectCollapseState[projectId];
+    renderUpcomings();
 }
 
 async function toggleItemDone(id, type) {
