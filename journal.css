@@ -327,5 +327,20 @@ body:not(.gsap-ready) button:not(.nav-tabs button) {
   .toast.show{transform:translateY(0);opacity:1;}
   ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px;}
 
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(230, 193, 131, 0.2);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(230, 193, 131, 0.4);
+  }
+
   @media(max-width:960px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:1fr 1fr;}}
   @media(max-width:640px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}.nav-tabs{display:none;}main{padding:1rem;}}

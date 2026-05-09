@@ -28,6 +28,35 @@
   <button id="skip-intro" class="absolute bottom-8 right-8 font-label-caps text-[10px] text-white/20 hover:text-white/60 uppercase tracking-[0.4em] transition-all opacity-0">Skip</button>
 </div>
 
+<!-- LOGIN SPLASH -->
+<div id="login-splash" class="fixed inset-0 z-[900] bg-stone-950/90 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden" style="display: none;">
+  <span class="font-label-caps text-secondary mb-4 tracking-[0.3em] uppercase">Digital Sanctuary</span>
+  <h1 class="font-h1 text-4xl text-on-surface mb-12 text-center max-w-md">Enter your credentials</h1>
+  
+  <form id="login-form" class="bg-white/5 border border-white/10 p-10 rounded-2xl flex flex-col gap-6 w-80 relative overflow-hidden" onsubmit="event.preventDefault(); handleLogin();">
+    <div class="absolute inset-0 bg-gradient-to-b from-secondary/0 via-secondary/5 to-secondary/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+    
+    <div class="flex flex-col gap-2 relative z-10">
+      <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest block">Username</label>
+      <input type="text" id="login-username" required class="w-full bg-transparent border-b border-white/10 p-2 text-on-surface focus:outline-none focus:border-secondary transition-colors" placeholder="e.g. MOHIT">
+    </div>
+    
+    <div class="flex flex-col gap-2 relative z-10">
+      <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest block">Password</label>
+      <input type="password" id="login-password" required class="w-full bg-transparent border-b border-white/10 p-2 text-on-surface focus:outline-none focus:border-secondary transition-colors" placeholder="••••••••">
+    </div>
+    
+    <button type="submit" class="mt-4 bg-secondary text-stone-900 font-label-caps text-xs uppercase tracking-widest py-3 rounded-lg hover:bg-white transition-colors relative z-10">
+      Unlock
+    </button>
+  </form>
+  
+  <div id="login-spinner" class="mt-8 text-secondary opacity-0 transition-opacity flex items-center gap-3">
+    <span class="material-symbols-outlined animate-spin">refresh</span>
+    <span class="font-label-caps text-[10px] tracking-widest uppercase" id="login-status">Authenticating...</span>
+  </div>
+</div>
+
 <script id="tailwind-config">
 tailwind.config = {
     darkMode: "class",
@@ -103,6 +132,10 @@ tailwind.config = {
 <style>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 body { background: none; color: inherit; }
 body::before { display: none; }
 nav, main, .page { display: block; }
@@ -115,47 +148,60 @@ nav, main, .page { display: block; }
 </div>
 
 
-<nav class="hidden md:flex flex-col py-8 gap-12 fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50">
-<div class="px-8 flex flex-col gap-2">
-<span class="font-newsreader text-xl text-stone-100">Syllable</span>
-<span class="font-sans text-xs tracking-widest uppercase text-stone-500">Digital Sanctuary</span>
-</div>
-<div class="flex flex-col gap-4 flex-grow">
-<a href="javascript:void(0)" onclick="showPage('today')" class="flex items-center gap-4 text-amber-200 border-l-2 border-amber-200/50 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer active">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
-    Today
-</a>
-<a href="javascript:void(0)" onclick="showPage('growth')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">trending_up</span>
-    Growth
-</a>
-<a href="javascript:void(0)" onclick="showPage('archive')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history</span>
-    Archive
-</a>
-<a href="javascript:void(0)" onclick="showPage('memory')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_awesome_motion</span>
-    Memories
-</a>
-</div>
-<!-- Quick Status Summary -->
-<div class="px-8 flex flex-col gap-6 mt-8 border-t border-white/5 pt-8">
-  <div class="flex flex-col gap-1">
-    <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Mood</span>
-    <span id="sidebar-qs-mood" class="text-sm text-stone-200 font-newsreader italic">—</span>
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50 overflow-y-auto custom-scrollbar">
+  <!-- Sidebar Header -->
+  <div class="px-8 py-8 flex flex-col gap-2 shrink-0">
+    <span class="font-newsreader text-xl text-stone-100">Syllable</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-stone-500">Digital Sanctuary</span>
   </div>
-  <div class="flex flex-col gap-1">
-    <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Focus</span>
-    <span id="sidebar-qs-rating" class="text-sm text-stone-200 font-newsreader italic">—</span>
+
+  <!-- Main Navigation -->
+  <div class="flex flex-col gap-4 py-4">
+    <a href="javascript:void(0)" onclick="showPage('today')" class="flex items-center gap-4 text-amber-200 border-l-2 border-amber-200/50 pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer active">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+      Today
+    </a>
+    <a href="javascript:void(0)" onclick="showPage('growth')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">trending_up</span>
+      Growth
+    </a>
+    <a href="javascript:void(0)" onclick="showPage('progress')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+      Progress
+    </a>
+    <a href="javascript:void(0)" onclick="showPage('archive')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history</span>
+      Archive
+    </a>
+    <a href="javascript:void(0)" onclick="showPage('memory')" class="flex items-center gap-4 text-stone-500 border-l-2 border-transparent pl-4 py-2 hover:bg-white/5 hover:text-stone-200 transition-all ease-in-out duration-300 font-sans text-xs tracking-widest uppercase cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_awesome_motion</span>
+      Memories
+    </a>
   </div>
-  <div class="flex flex-col gap-1">
-    <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Tasks</span>
-    <span id="sidebar-qs-tasks" class="text-sm text-stone-200 font-newsreader italic">—</span>
+
+  <!-- Quick Status Summary -->
+  <div class="px-8 flex flex-col gap-6 border-t border-white/5 pt-8 pb-8">
+    <div class="flex flex-col gap-1">
+      <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Mood</span>
+      <span id="sidebar-qs-mood" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Focus</span>
+      <span id="sidebar-qs-rating" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-semibold">Tasks</span>
+      <span id="sidebar-qs-tasks" class="text-sm text-stone-200 font-newsreader italic">—</span>
+    </div>
   </div>
-</div>
-<div class="px-8 mt-auto">
-<div class="font-sans text-xs tracking-widest text-stone-500" id="nav-date-display"></div>
-</div>
+
+  <!-- Sidebar Footer -->
+  <div class="px-8 py-8 mt-auto flex flex-col gap-4 shrink-0 border-t border-white/5">
+    <button onclick="logout()" class="flex items-center gap-3 text-stone-500 hover:text-red-400 transition-colors font-sans text-xs tracking-widest uppercase text-left w-full">
+      <span class="material-symbols-outlined text-[16px]">logout</span> Log out
+    </button>
+    <div class="font-sans text-xs tracking-widest text-stone-500" id="nav-date-display"></div>
+  </div>
 </nav>
 <main class="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap" style="max-width: none; padding-top: 2rem;">
 
@@ -482,6 +528,64 @@ nav, main, .page { display: block; }
     </div>
 </div>
 
+<!-- PROGRESS -->
+<div id="page-progress" class="page">
+  <header class="max-w-4xl mx-auto pt-8 md:pt-12 mb-16 text-center flex flex-col items-center gap-8">
+    <div>
+      <span class="font-label-caps text-secondary mb-4 block tracking-widest uppercase">Vitality Trends</span>
+      <h1 class="font-h1 text-5xl md:text-6xl text-on-surface mb-6">Your Progress</h1>
+      <p class="font-sans text-on-surface-variant text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+        Trace the rhythms of your daily habits and see how you evolve over time.
+      </p>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+    <!-- Steps Chart -->
+    <div class="bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-6 bento-card">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Steps History</span>
+        <span class="material-symbols-outlined text-secondary text-[20px]">directions_walk</span>
+      </div>
+      <div class="chart-wrap h-48 flex items-end justify-between gap-1" id="prog-steps-chart"></div>
+      <div class="flex justify-between mt-2 text-[9px] font-label-caps text-on-surface-variant/50 uppercase" id="prog-steps-labels"></div>
+    </div>
+    
+    <!-- Water Chart -->
+    <div class="bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-6 bento-card">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Hydration</span>
+        <span class="material-symbols-outlined text-blue-400 text-[20px]">water_drop</span>
+      </div>
+      <div class="chart-wrap h-48 flex items-end justify-between gap-1" id="prog-water-chart"></div>
+      <div class="flex justify-between mt-2 text-[9px] font-label-caps text-on-surface-variant/50 uppercase" id="prog-water-labels"></div>
+    </div>
+
+    <!-- Sleep Chart -->
+    <div class="bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-6 bento-card">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Sleep Patterns</span>
+        <span class="material-symbols-outlined text-indigo-400 text-[20px]">bedtime</span>
+      </div>
+      <div class="chart-wrap h-48 flex items-end justify-between gap-1" id="prog-sleep-chart"></div>
+      <div class="flex justify-between mt-2 text-[9px] font-label-caps text-on-surface-variant/50 uppercase" id="prog-sleep-labels"></div>
+    </div>
+
+    <!-- Exercise Chart -->
+    <div class="bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-6 bento-card">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Exercise Mins</span>
+        <span class="material-symbols-outlined text-green-400 text-[20px]">fitness_center</span>
+      </div>
+      <div class="chart-wrap h-48 flex items-end justify-between gap-1" id="prog-exercise-chart"></div>
+      <div class="flex justify-between mt-2 text-[9px] font-label-caps text-on-surface-variant/50 uppercase" id="prog-exercise-labels"></div>
+    </div>
+
+    <!-- Dynamic Rhythms Container -->
+    <div id="rhythms-container" class="contents"></div>
+  </div>
+</div>
+
 <!-- ARCHIVE -->
 <div id="page-archive" class="page">
   <header class="max-w-4xl pt-8 md:pt-12 mb-12">
@@ -569,61 +673,161 @@ nav, main, .page { display: block; }
       <h1 class="font-h1 text-h1 text-on-surface mb-6">Memory Gallery</h1>
       <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed mx-auto">A gentle walkthrough of your shared moments and quiet realizations.</p>
     </div>
-    <button onclick="openMemoryModal()" class="bg-secondary/10 border border-secondary/30 text-secondary px-8 py-3 rounded-full font-label-caps text-xs uppercase tracking-widest hover:bg-secondary/20 transition-all flex items-center gap-2">
+    <button onclick="openMemoryModal()" class="gsap-btn bg-secondary/10 border border-secondary/30 text-secondary px-8 py-3 rounded-full font-label-caps text-xs uppercase tracking-widest hover:bg-secondary/20 transition-all flex items-center gap-2">
       <span class="material-symbols-outlined text-[18px]">add_a_photo</span> Capture Moment
     </button>
   </header>
   <section class="pb-section-gap max-w-7xl mx-auto w-full">
     <div id="memory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter"></div>
     <div class="mt-16 flex justify-center">
-      <button class="font-label-caps text-label-caps text-secondary uppercase tracking-widest border-b border-secondary pb-1 hover:text-secondary-fixed transition-colors duration-300">Explore Further</button>
+      <button class="gsap-btn font-label-caps text-label-caps text-secondary uppercase tracking-widest border-b border-secondary pb-1 hover:text-secondary-fixed transition-colors duration-300">Explore Further</button>
     </div>
   </section>
+</div>
+
+<!-- MEMORY DETAIL -->
+<div id="page-memory-detail" class="page">
+  <header class="max-w-4xl mx-auto pt-8 md:pt-12 mb-12 flex items-center justify-between">
+    <button onclick="showPage('memory')" class="gsap-btn flex items-center gap-2 text-stone-500 hover:text-stone-100 transition-colors font-label-caps text-[10px] uppercase tracking-widest">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span> Back to Gallery
+    </button>
+    <div class="flex gap-3">
+      <button id="mem-edit-btn" onclick="toggleMemoryEdit(true)" class="gsap-btn px-4 py-2 bg-white/5 border border-white/10 text-stone-300 hover:text-secondary hover:border-secondary/50 rounded-full transition-all font-label-caps text-[10px] uppercase tracking-widest flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">edit</span> Edit
+      </button>
+      <button id="mem-delete-btn" onclick="deleteMemoryFromDetail()" class="gsap-btn px-4 py-2 bg-white/5 border border-white/10 text-stone-300 hover:text-red-400 hover:border-red-400/50 rounded-full transition-all font-label-caps text-[10px] uppercase tracking-widest flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">delete</span> Delete
+      </button>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto bento-unit">
+    <!-- View Mode -->
+    <div id="mem-view-mode" class="flex flex-col gap-12">
+      <div id="mem-detail-image-container" class="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 hidden">
+        <img id="mem-detail-image" src="" class="w-full h-full object-cover">
+      </div>
+      
+      <div class="max-w-3xl mx-auto text-center flex flex-col gap-8">
+        <div class="flex flex-col gap-2">
+          <span id="mem-detail-date" class="font-label-caps text-label-caps text-secondary tracking-widest uppercase"></span>
+          <h1 id="mem-detail-title" class="font-h1 text-4xl md:text-6xl text-on-surface font-bold"></h1>
+        </div>
+        <p id="mem-detail-content" class="font-newsreader text-2xl md:text-3xl text-on-surface/80 leading-relaxed italic"></p>
+        <div id="mem-detail-tags" class="flex flex-wrap justify-center gap-3"></div>
+      </div>
+    </div>
+
+    <!-- Edit Mode (Hidden by default) -->
+    <div id="mem-edit-mode" class="hidden max-w-5xl mx-auto bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-3xl p-8 md:p-12 shadow-2xl">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Left Side -->
+        <div class="flex flex-col gap-8">
+          <div class="flex flex-col gap-2">
+            <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Memory Name</label>
+            <input type="text" id="edit-mem-title" placeholder="A name for this moment..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0 text-lg font-bold">
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Description</label>
+            <textarea id="edit-mem-content" class="w-full bg-white/5 border border-white/10 rounded-xl p-6 text-on-surface focus:border-secondary focus:ring-0 min-h-[200px] resize-none font-newsreader text-xl italic"></textarea>
+          </div>
+          
+          <div class="flex flex-col gap-6">
+            <div class="flex flex-col gap-2">
+              <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Tags (comma separated)</label>
+              <input type="text" id="edit-mem-tags" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0 text-sm">
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="edit-mem-italic" class="w-5 h-5 rounded border-white/10 bg-white/5 text-secondary focus:ring-0">
+              <label for="edit-mem-italic" class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest cursor-pointer">Poetic Style</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex flex-col gap-6 bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+          <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest block">Memory Visuals</label>
+          <div id="edit-mem-images-container" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
+          <button onclick="addEditImageInput()" class="mt-2 flex items-center justify-center gap-2 bg-white/5 border border-dashed border-white/10 hover:border-secondary/40 hover:bg-white/10 py-4 rounded-xl text-stone-500 hover:text-secondary transition-all font-label-caps text-[10px] uppercase tracking-widest">
+            <span class="material-symbols-outlined text-[18px]">add_photo_alternate</span> Add another image
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-4 pt-12 border-t border-white/5 justify-end">
+        <button onclick="saveMemoryEdit()" class="gsap-btn px-12 bg-secondary text-stone-900 font-label-caps py-4 rounded-xl hover:bg-white transition-all uppercase tracking-widest text-xs font-black shadow-xl shadow-secondary/10">Save Changes</button>
+        <button onclick="toggleMemoryEdit(false)" class="gsap-btn px-8 border border-white/10 text-stone-500 hover:bg-white/5 rounded-xl transition-all font-label-caps uppercase tracking-widest text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 </main>
 
 <!-- MEMORY MODAL -->
-<div id="memory-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-stone-950/60 backdrop-blur-md p-6">
-  <div class="bg-stone-900 border border-white/10 rounded-2xl w-full max-w-lg p-8 shadow-2xl relative">
-    <button onclick="closeMemoryModal()" class="absolute top-6 right-6 text-stone-500 hover:text-stone-100 transition-colors">
-      <span class="material-symbols-outlined">close</span>
-    </button>
-    <h2 class="font-h2 text-2xl text-on-surface mb-8">Capture a Memory</h2>
-    <div class="flex flex-col gap-6">
-      <div>
-        <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">The Reflection</label>
-        <textarea id="m-content" placeholder="What happened in this moment?" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0 min-h-[120px] resize-none"></textarea>
-      </div>
-      
-      <div>
-        <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">Memory Visual (Upload or URL)</label>
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-4">
-            <label for="m-file" class="flex-grow flex items-center justify-center gap-2 bg-white/5 border border-dashed border-white/20 rounded-xl p-6 cursor-pointer hover:bg-white/10 hover:border-secondary/50 transition-all group">
-              <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">upload_file</span>
-              <span class="text-xs text-on-surface-variant group-hover:text-on-surface">Upload from device</span>
-              <input type="file" id="m-file" accept="image/*" class="hidden" onchange="handleMemoryFile(this)">
-            </label>
-            <div class="text-on-surface-variant text-[10px] uppercase">or</div>
-            <input type="text" id="m-image" placeholder="Image URL..." class="flex-grow bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0 text-sm">
+<div id="memory-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto bg-stone-950/60 backdrop-blur-md">
+  <div class="flex min-h-screen items-center justify-center p-4 md:p-12">
+    <div class="bg-stone-900 border border-white/10 rounded-3xl w-full max-w-5xl p-6 md:p-12 shadow-2xl relative my-auto">
+      <button onclick="closeMemoryModal()" class="absolute top-8 right-8 text-stone-500 hover:text-stone-100 transition-colors z-20">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <h2 class="font-h2 text-2xl md:text-3xl text-on-surface mb-8">Capture a Memory</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Left Side: Content & Meta -->
+        <div class="flex flex-col gap-8">
+          <div>
+            <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">Memory Name</label>
+            <input type="text" id="m-title" placeholder="A title for this memory..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0 text-lg font-bold mb-6">
+            
+            <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">The Description</label>
+            <textarea id="m-content" placeholder="Describe this moment in detail..." class="w-full bg-white/5 border border-white/10 rounded-xl p-6 text-on-surface focus:border-secondary focus:ring-0 min-h-[200px] resize-none font-newsreader text-xl italic"></textarea>
           </div>
-          <div id="m-preview-container" class="hidden">
-            <div class="relative w-full h-40 rounded-xl overflow-hidden border border-white/10">
-              <img id="m-preview" src="" class="w-full h-full object-cover">
-              <button onclick="clearMemoryFile()" class="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/80 transition-colors">
-                <span class="material-symbols-outlined text-sm">close</span>
-              </button>
+          
+          <div class="flex flex-col gap-6">
+            <div>
+              <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">Tags (comma separated)</label>
+              <input type="text" id="m-tags" placeholder="Clarity, Stillness" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0">
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="m-italic" class="w-5 h-5 rounded border-white/10 bg-white/5 text-secondary focus:ring-0" checked>
+              <label for="m-italic" class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest cursor-pointer">Poetic Style</label>
             </div>
           </div>
         </div>
+
+        <!-- Right Side: Visuals -->
+        <div class="flex flex-col gap-6 bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+          <label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest block">Memory Visuals</label>
+          <div id="m-images-container" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Dynamic inputs go here -->
+          </div>
+          <button onclick="addImageInput()" class="mt-2 flex items-center justify-center gap-2 bg-white/5 border border-dashed border-white/10 hover:border-secondary/40 hover:bg-white/10 py-4 rounded-xl text-stone-500 hover:text-secondary transition-all font-label-caps text-[10px] uppercase tracking-widest">
+            <span class="material-symbols-outlined text-[18px]">add_photo_alternate</span> Add another image
+          </button>
+        </div>
       </div>
-      
-      <div class="grid grid-cols-2 gap-4">
-        <div><label class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 block">Tags (comma separated)</label><input type="text" id="m-tags" placeholder="Clarity, Stillness" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-on-surface focus:border-secondary focus:ring-0"></div>
-        <div class="flex items-center gap-3 pt-6"><input type="checkbox" id="m-italic" class="w-5 h-5 rounded border-white/10 bg-white/5 text-secondary focus:ring-0"><label for="m-italic" class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest cursor-pointer">Poetic Style</label></div>
+
+      <div class="mt-12 pt-8 border-t border-white/5 flex justify-end">
+        <button onclick="addMemory()" class="gsap-btn px-12 bg-secondary text-stone-900 font-label-caps py-4 rounded-xl hover:bg-white transition-all uppercase tracking-widest text-xs font-black shadow-xl shadow-secondary/10">Preserve Memory</button>
       </div>
-      <button onclick="addMemory()" class="w-full bg-secondary text-on-secondary font-label-caps py-4 rounded-xl hover:bg-secondary-fixed transition-all mt-4 uppercase tracking-widest">Preserve Memory</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="closeConfirm(false)"></div>
+  <div class="relative bg-[#1a1c1e] border border-white/10 p-8 rounded-3xl max-w-sm w-full shadow-2xl scale-95 opacity-0 transition-all duration-300" id="confirmContent">
+    <div class="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center mb-6">
+      <span class="material-symbols-outlined text-red-400">warning</span>
+    </div>
+    <h3 class="text-xl font-bold text-stone-100 mb-2" id="confirmTitle">Confirm Action</h3>
+    <p class="text-stone-400 text-sm mb-8 leading-relaxed" id="confirmMessage">Are you sure you want to proceed? This action cannot be undone.</p>
+    <div class="grid grid-cols-2 gap-4">
+      <button onclick="closeConfirm(false)" class="py-3 px-6 rounded-xl border border-white/10 text-stone-300 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px] font-bold">Cancel</button>
+      <button onclick="closeConfirm(true)" class="py-3 px-6 rounded-xl bg-red-500/80 text-white hover:bg-red-500 transition-all uppercase tracking-widest text-[10px] font-bold shadow-lg shadow-red-500/20">Delete</button>
     </div>
   </div>
 </div>
