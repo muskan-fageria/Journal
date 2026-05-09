@@ -22,6 +22,22 @@ const RHYTHM_ICONS = {
   'dance': 'self_care', 'art': 'palette', 'design': 'draw', 'mindfulness': 'psychology'
 };
 
+const CAT_ICONS = {
+  personal: 'favorite',
+  work: 'work',
+  social: 'groups',
+  health: 'fitness_center',
+  other: 'push_pin'
+};
+
+const MOOD_ICONS = {
+  'Flowing': 'water_drop',
+  'Light': 'light_mode',
+  'Heavy': 'tsunami',
+  'Restless': 'air',
+  'Centered': 'filter_vintage'
+};
+
 // ========== INTRO SEQUENCE ==========
 function runIntroSequence() {
   const splash = document.getElementById('intro-splash');
@@ -930,6 +946,7 @@ async function addEvent() {
   if (!error && res) {
     data.events.push(res[0]);
     ['e-name', 'e-notes'].forEach(id => document.getElementById(id).value = '');
+    selectECat('personal', 'favorite', 'Personal'); 
     renderEvents(); renderEventsChart(); toast('Event added ✓');
   }
 }
@@ -949,8 +966,11 @@ function renderEvents() {
       </div>
       <div class="flex-grow">
         <div class="font-body-md text-on-surface">${e.name}</div>
-        <div class="flex gap-2 mt-1">
-          <span class="text-[9px] uppercase tracking-widest text-secondary px-1.5 py-0.5 rounded border border-secondary/30 bg-secondary/5">${e.cat}</span>
+        <div class="flex gap-2 mt-1 items-center">
+          <span class="flex items-center gap-1 text-[9px] uppercase tracking-widest text-secondary px-1.5 py-0.5 rounded border border-secondary/30 bg-secondary/5">
+            <span class="material-symbols-outlined text-[10px]">${CAT_ICONS[e.cat] || 'category'}</span>
+            ${e.cat}
+          </span>
           ${e.notes ? `<span class="text-[10px] text-on-surface-variant italic">${e.notes}</span>` : ''}
         </div>
       </div>
@@ -994,7 +1014,7 @@ async function deleteHobby(id) {
 function renderHobbies() {
   const el = document.getElementById('hobby-list'); if (!el) return;
   if (!data.hobbies.length) { el.innerHTML = '<div class="empty-state" style="padding:1rem">No hobbies yet.</div>'; return; }
-  el.innerHTML = data.hobbies.map(h => `<div class="hobby-item"><div class="hobby-row"><div class="hobby-name">${h.name}</div><div class="hobby-time">⏱ ${h.mins}m</div><div class="hobby-streak">🔥 ${h.streak}d</div><button class="task-del" onclick="deleteHobby('${h.id}')">✕</button></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.min(100, h.mins / 120 * 100)}%;background:linear-gradient(90deg,var(--green-dim),var(--olive))"></div></div></div>`).join('');
+  el.innerHTML = data.hobbies.map(h => `<div class="hobby-item"><div class="hobby-row"><div class="hobby-name">${h.name}</div><div class="hobby-time flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> ${h.mins}m</div><div class="hobby-streak flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_fire_department</span> ${h.streak}d</div><button class="task-del" onclick="deleteHobby('${h.id}')">✕</button></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.min(100, h.mins / 120 * 100)}%;background:linear-gradient(90deg,var(--green-dim),var(--olive))"></div></div></div>`).join('');
 }
 
 // ========== SOCIAL ==========
@@ -1184,7 +1204,12 @@ function renderLog() {
             ${(e.tasks || []).map(t => `<span class="bg-secondary/10 text-secondary text-[9px] px-1.5 py-0.5 rounded border border-secondary/20">${t}</span>`).join('') || '<span class="text-on-surface-variant italic">—</span>'}
           </div>
         </td>
-        <td class="py-4 text-lg">${e.mood || '—'}</td>
+        <td class="py-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary text-[18px]">${MOOD_ICONS[e.mood] || 'sentiment_satisfied'}</span>
+            <span class="text-sm font-newsreader italic text-on-surface">${e.mood || '—'}</span>
+          </div>
+        </td>
         <td class="py-4">
           <div class="flex items-center gap-1">
             <span class="text-secondary font-h3 text-lg font-bold">${e.rating || '—'}</span>
@@ -1205,7 +1230,16 @@ function renderLog() {
   const statsEl = document.getElementById('ref-stats');
   if (statsEl) statsEl.innerHTML = entries.length ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-faint)">Days logged</span><strong>${entries.length}</strong></div><div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-faint)">Tasks done</span><strong>${totalTasks}</strong></div><div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.35rem 0"><span style="color:var(--text-faint)">Avg prod hrs</span><strong>${entries.filter(e => e.productive).length ? (entries.filter(e => e.productive).reduce((a, e) => a + parseFloat(e.productive || 0), 0) / entries.filter(e => e.productive).length).toFixed(1) + 'h' : '—'}</strong></div>` : '';
   const moodEl = document.getElementById('mood-freq');
-  if (moodEl) { const mc = {}; entries.forEach(e => { if (e.mood) mc[e.mood] = (mc[e.mood] || 0) + 1; }); moodEl.innerHTML = Object.entries(mc).sort((a, b) => b[1] - a[1]).map(([m, c]) => `<div style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem"><span style="font-size:1.15rem">${m}</span><span style="color:var(--text-faint)">${c}×</span></div>`).join('') || '<div style="font-size:0.82rem;color:var(--text-faint);font-style:italic">No moods yet.</div>'; }
+  if (moodEl) { 
+    const mc = {}; entries.forEach(e => { if (e.mood) mc[e.mood] = (mc[e.mood] || 0) + 1; }); 
+    moodEl.innerHTML = Object.entries(mc).sort((a, b) => b[1] - a[1]).map(([m, c]) => `
+      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem">
+        <span class="material-symbols-outlined text-secondary text-[16px]">${MOOD_ICONS[m] || 'sentiment_satisfied'}</span>
+        <span style="color:var(--text-faint)">${m}</span>
+        <strong style="color:var(--text)">${c}×</strong>
+      </div>
+    `).join('') || '<div style="font-size:0.82rem;color:var(--text-faint);font-style:italic">No moods yet.</div>'; 
+  }
   renderLogRatingChart(entries);
 }
 
@@ -1315,12 +1349,18 @@ function renderEventsChart() {
   const wrap = document.getElementById('events-chart-wrap'); if (!wrap) return;
   wrap.innerHTML = '';
   if (!data.events.length) { wrap.innerHTML = '<div style="font-size:0.82rem;color:var(--text-faint);font-style:italic">No events yet.</div>'; return; }
-  const cats = { personal: { label: '💛 Personal', color: '#d0be60' }, work: { label: '💼 Work', color: '#7ab0e0' }, social: { label: '🎉 Social', color: '#8fb86e' }, health: { label: '💪 Health', color: '#52c27e' }, other: { label: '📌 Other', color: '#628a5a' } };
+  const cats = { 
+    personal: { icon: 'favorite', color: '#d0be60', label: 'Personal' }, 
+    work: { icon: 'work', color: '#7ab0e0', label: 'Work' }, 
+    social: { icon: 'groups', color: '#8fb86e', label: 'Social' }, 
+    health: { icon: 'fitness_center', color: '#52c27e', label: 'Health' }, 
+    other: { icon: 'push_pin', color: '#628a5a', label: 'Other' } 
+  };
   const counts = {}; data.events.forEach(e => counts[e.cat] = (counts[e.cat] || 0) + 1);
   Object.entries(counts).forEach(([cat, cnt]) => {
-    const c = cats[cat] || { label: cat, color: '#6a8c62' };
+    const c = cats[cat] || { icon: 'category', label: cat, color: '#6a8c62' };
     const circ = 94.2, pct = cnt / data.events.length;
-    wrap.innerHTML += `<div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem"><div style="position:relative;width:50px;height:50px"><svg viewBox="0 0 36 36" style="width:100%;height:100%;transform:rotate(-90deg)"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--surface2)" stroke-width="3"></circle><circle cx="18" cy="18" r="15" fill="none" stroke="${c.color}" stroke-width="3" stroke-dasharray="${circ}" stroke-dashoffset="${circ - (circ*pct)}" style="transition:stroke-dashoffset 1s ease-out"></circle></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--text)">${Math.round(pct*100)}%</div></div><span style="font-size:0.7rem;color:var(--text-dim);font-weight:600">${c.label}</span></div>`;
+    wrap.innerHTML += `<div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem"><div style="position:relative;width:50px;height:50px"><svg viewBox="0 0 36 36" style="width:100%;height:100%;transform:rotate(-90deg)"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--surface2)" stroke-width="3"></circle><circle cx="18" cy="18" r="15" fill="none" stroke="${c.color}" stroke-width="3" stroke-dasharray="${circ}" stroke-dashoffset="${circ - (circ*pct)}" style="transition:stroke-dashoffset 1s ease-out"></circle></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--text)"><span class="material-symbols-outlined text-[16px]">${c.icon}</span></div></div><span style="font-size:0.7rem;color:var(--text-dim);font-weight:600">${c.label}</span></div>`;
   });
 }
 
@@ -1879,6 +1919,8 @@ function openMemoryModal() {
   if (modal) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    document.body.classList.add('modal-open');
+    if (window.lenis) window.lenis.stop();
   }
 }
 
@@ -1887,6 +1929,8 @@ function closeMemoryModal() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    document.body.classList.remove('modal-open');
+    if (window.lenis) window.lenis.start();
   }
 }
 
@@ -2341,3 +2385,37 @@ function closeConfirm(result) {
         }
     }, 300);
 }
+
+// Custom Dropdown Logic
+function selectECat(val, icon, label) {
+    document.getElementById('e-cat').value = val;
+    document.getElementById('e-cat-selected').innerHTML = `
+        <span class="material-symbols-outlined text-secondary text-[18px]">${icon}</span>
+        <span>${label}</span>
+    `;
+    const options = document.getElementById('e-cat-options');
+    options.classList.add('hidden');
+    document.getElementById('e-cat-chevron').style.transform = 'rotate(0deg)';
+    
+    // Update active class
+    document.querySelectorAll('#e-cat-options .dropdown-item').forEach(el => {
+        el.classList.remove('active');
+        if (el.getAttribute('onclick').includes(`'${val}'`)) el.classList.add('active');
+    });
+}
+
+// Global click listener for dropdowns
+window.addEventListener('click', (e) => {
+    const dropdownBtn = document.getElementById('e-cat-btn');
+    const options = document.getElementById('e-cat-options');
+    const chevron = document.getElementById('e-cat-chevron');
+    
+    if (dropdownBtn && dropdownBtn.contains(e.target)) {
+        const isHidden = options.classList.contains('hidden');
+        options.classList.toggle('hidden');
+        chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    } else if (options && !options.contains(e.target)) {
+        options.classList.add('hidden');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+});
