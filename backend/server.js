@@ -415,32 +415,73 @@ app.put('/api/social', async (req, res) => {
 // ==========================================
 // MEMORIES ENDPOINTS
 // ==========================================
-app.get('/api/memories', (req, res) => {
-  const db = readDB();
-  const list = db.memories || [];
-  // Sort by created_at descending (newest first)
-  list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  res.json(list);
+app.get('/api/memories', async (req, res) => {
+  const { data, error } = await req.supabase
+    .from('memories')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .order('created_at', { ascending: false });
+    
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
-app.post('/api/memories', (req, res) => {
-  const db = readDB();
+app.post('/api/memories', async (req, res) => {
   const memory = {
-    id: generateId(),
-    created_at: new Date().toISOString(),
-    ...req.body
+    user_id: req.user.id,
+    date: req.body.date || new Date().toISOString().split('T')[0],
+    title: req.body.title,
+    description: req.body.description,
+    image_url: req.body.image_url,
+    file_path: req.body.file_path,
   };
-  db.memories = db.memories || [];
-  db.memories.push(memory);
-  writeDB(db);
-  res.status(201).json(memory);
+  
+  const { data, error } = await req.supabase
+    .from('memories')
+    .insert(memory)
+    .select()
+    .single();
+    
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
 });
 
-app.delete('/api/memories/:id', (req, res) => {
-  const db = readDB();
+app.delete('/api/memories/:id', async (req, res) => {
   const { id } = req.params;
-  db.memories = (db.memories || []).filter(m => m.id !== id);
-  writeDB(db);
+  
+  // 1. Get the memory to find the file_path
+  const { data: memory, error: fetchError } = await req.supabase
+    .from('memories')
+    .select('file_path')
+    .eq('id', id)
+    .eq('user_id', req.user.id)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    return res.status(500).json({ error: fetchError.message });
+  }
+
+  // 2. Delete the file from Supabase Storage if it exists
+  if (memory && memory.file_path) {
+    const { error: storageError } = await req.supabase
+      .storage
+      .from('memories')
+      .remove([memory.file_path]);
+    
+    if (storageError) {
+      console.error("Error deleting file from storage:", storageError);
+    }
+  }
+
+  // 3. Delete the row from the database
+  const { error: deleteError } = await req.supabase
+    .from('memories')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', req.user.id);
+
+  if (deleteError) return res.status(500).json({ error: deleteError.message });
+  
   res.json({ success: true });
 });
 
