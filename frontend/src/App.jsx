@@ -17,12 +17,15 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   useEffect(() => {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
       if (session) fetchProfile(session.user.id);
+      setIsCheckingAuth(false);
     });
 
     // Listen for auth changes
@@ -30,6 +33,7 @@ export default function App() {
       setIsAuthenticated(!!session);
       if (session) fetchProfile(session.user.id);
       else setUserProfile(null);
+      setIsCheckingAuth(false);
     });
 
     return () => subscription.unsubscribe();
@@ -102,6 +106,7 @@ export default function App() {
     if (!isAuthenticated) return;
 
     const loadAllData = async () => {
+      setIsLoadingData(true);
       try {
         const [
           todayRes,
@@ -134,6 +139,8 @@ export default function App() {
       } catch (err) {
         console.error("Error loading data from API:", err);
         triggerToast("Failed to load local data. Showing offline state.");
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -377,6 +384,8 @@ export default function App() {
     }
   };
 
+  const showLoadingScreen = (isCheckingAuth || (isAuthenticated && isLoadingData)) && !showSplash;
+
   return (
     <>
       {/* Background Deep Misty Forest */}
@@ -387,6 +396,32 @@ export default function App() {
         ></div>
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
       </div>
+
+      {/* Premium Glassmorphic Loading Screen */}
+      {showLoadingScreen && (
+        <div className="fixed inset-0 z-[9999] bg-[#0c120e] flex flex-col items-center justify-center gap-6 select-none animate-fade-in">
+          {/* Ambient Background Glows */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+          {/* Premium Glassmorphic Loading Box */}
+          <div className="relative p-12 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-xl shadow-2xl flex flex-col items-center gap-6 max-w-sm text-center">
+            {/* Spinner Animation */}
+            <div className="relative w-20 h-20">
+              <div className="absolute inset-0 rounded-full border-2 border-secondary/20 border-t-secondary animate-spin" style={{ animationDuration: '1.2s' }}></div>
+              <div className="absolute inset-4 rounded-full bg-secondary/5 border border-secondary/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-secondary text-2xl select-none animate-pulse">spa</span>
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="flex flex-col gap-2">
+              <h3 className="font-newsreader text-2xl text-stone-200 italic">Entering the Sanctuary</h3>
+              <p className="font-sans text-xs tracking-[0.2em] uppercase text-stone-500 animate-pulse">Gathering your thoughts...</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Intro splash loading screen */}
       {showSplash && (
