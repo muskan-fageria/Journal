@@ -6,6 +6,7 @@ export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks
   const navItems = [
     { id: 'today', label: 'Today', icon: 'dashboard' },
     { id: 'growth', label: 'Growth', icon: 'trending_up' },
+    { id: 'diary', label: 'Diary', icon: 'menu_book' },
     { id: 'archive', label: 'Archive', icon: 'history' },
     { id: 'memory', label: 'Memories', icon: 'auto_awesome_motion' },
   ];

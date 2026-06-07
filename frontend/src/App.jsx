@@ -6,6 +6,7 @@ import TodayPage from './pages/TodayPage';
 import GrowthPage from './pages/GrowthPage';
 import ArchivePage from './pages/ArchivePage';
 import MemoryPage from './pages/MemoryPage';
+import DiaryPage from './pages/DiaryPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('today');
@@ -385,6 +386,12 @@ export default function App() {
           <MemoryPage 
             memories={memories}
             setMemories={setMemories}
+            toast={triggerToast}
+          />
+        )}
+
+        {currentPage === 'diary' && (
+          <DiaryPage 
             toast={triggerToast}
           />
         )}

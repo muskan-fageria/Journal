@@ -28,6 +28,7 @@ function readDB() {
       hobbies: [],
       entries: [],
       memories: [],
+      diary: [],
       socialData: {},
       todayState: {}
     };
@@ -309,6 +310,50 @@ app.delete('/api/memories/:id', (req, res) => {
   const db = readDB();
   const { id } = req.params;
   db.memories = (db.memories || []).filter(m => m.id !== id);
+  writeDB(db);
+  res.json({ success: true });
+});
+
+// ==========================================
+// DIARY ENDPOINTS
+// ==========================================
+app.get('/api/diary', (req, res) => {
+  const db = readDB();
+  const list = db.diary || [];
+  // Sort by created_at descending (newest first)
+  list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  res.json(list);
+});
+
+app.post('/api/diary', (req, res) => {
+  const db = readDB();
+  const entry = {
+    id: generateId(),
+    created_at: new Date().toISOString(),
+    ...req.body
+  };
+  db.diary = db.diary || [];
+  db.diary.push(entry);
+  writeDB(db);
+  res.status(201).json(entry);
+});
+
+app.put('/api/diary/:id', (req, res) => {
+  const db = readDB();
+  const { id } = req.params;
+  const index = (db.diary || []).findIndex(d => d.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Diary entry not found' });
+  }
+  db.diary[index] = { ...db.diary[index], ...req.body, updated_at: new Date().toISOString() };
+  writeDB(db);
+  res.json(db.diary[index]);
+});
+
+app.delete('/api/diary/:id', (req, res) => {
+  const db = readDB();
+  const { id } = req.params;
+  db.diary = (db.diary || []).filter(d => d.id !== id);
   writeDB(db);
   res.json({ success: true });
 });

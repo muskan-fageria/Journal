@@ -200,6 +200,21 @@
       "created_at": "2026-09-28T08:00:00.000Z"
     }
   ],
+  "diary": [
+    {
+      "id": "2gm1ag7w8",
+      "created_at": "2026-06-07T09:14:47.296Z",
+      "title": "Sunday, June 7, 2026Test Title",
+      "content": "This is a test entry in my new notebookThis is a test entry in my new notebook page. page.",
+      "updated_at": "2026-06-07T09:16:50.840Z"
+    },
+    {
+      "id": "m41j1x1xs",
+      "created_at": "2026-06-07T09:15:24.963Z",
+      "title": "Sunday, June 7, 2026Second Entry",
+      "content": "Another test entry."
+    }
+  ],
   "socialData": {
     "ig-slider": 45,
     "sl-slider": 95,
