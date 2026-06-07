@@ -200,23 +200,12 @@ export default function App() {
       const video = document.getElementById('intro-video');
       const skipBtn = document.getElementById('skip-intro');
       
-      const tl = gsap.timeline({
-        onComplete: () => {
-          sessionStorage.setItem('introPlayed', 'true');
-          finishIntro();
-        }
-      });
-
       if (skipBtn) {
         gsap.to(skipBtn, { opacity: 1, duration: 1, delay: 1 });
       }
 
-      if (video) {
-        video.play().catch(e => console.log("Video autoplay blocked", e));
-        video.onended = () => finishIntro();
-      }
-
       const finishIntro = () => {
+        sessionStorage.setItem('introPlayed', 'true');
         const splash = document.getElementById('intro-splash');
         if (splash) {
           gsap.to(splash, {
@@ -232,6 +221,11 @@ export default function App() {
           setShowSplash(false);
         }
       };
+
+      if (video) {
+        video.play().catch(e => console.log("Video autoplay blocked", e));
+        video.onended = finishIntro;
+      }
 
       if (skipBtn) {
         skipBtn.onclick = finishIntro;
@@ -426,7 +420,7 @@ export default function App() {
       {/* Intro splash loading screen */}
       {showSplash && (
         <div id="intro-splash" className="fixed inset-0 z-[1000] bg-stone-950 flex items-center justify-center overflow-hidden">
-          <video id="intro-video" className="w-full h-full object-cover" muted playsinline>
+          <video id="intro-video" className="w-full h-full object-cover" muted playsInline>
             <source src="/loading-video.mp4" type="video/mp4" />
           </video>
           <button 
