@@ -147,7 +147,7 @@ export default function MemoryPage({ memories, setMemories, toast }) {
     if (!window.confirm('Are you sure you want to let this memory fade?')) return;
 
     try {
-      await fetch(`/api/memories/${id}`, { method: 'DELETE' });
+      await authFetch(`/api/memories/${id}`, { method: 'DELETE' });
       setMemories(memories.filter(m => m.id !== id));
       setSelectedMemory(null);
       toast('Memory faded');

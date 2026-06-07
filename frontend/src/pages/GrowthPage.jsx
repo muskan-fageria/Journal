@@ -118,24 +118,22 @@ export default function GrowthPage({
   const handleToggleTask = async (id, currentVal) => {
     const updatedVal = !currentVal;
     setTasks(tasks.map(t => t.id === id ? { ...t, done: updatedVal } : t));
-    await fetch(`/api/tasks/${id}`, {
+    await authFetch(`/api/tasks/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ done: updatedVal })
     });
   };
 
   const handleDeleteTask = async (id) => {
     setTasks(tasks.filter(t => t.id !== id));
-    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    await authFetch(`/api/tasks/${id}`, { method: 'DELETE' });
   };
 
   const handleProjectSlider = async (id, val) => {
     const pct = parseInt(val);
     setProjects(projects.map(p => p.id === id ? { ...p, pct } : p));
-    await fetch(`/api/projects/${id}`, {
+    await authFetch(`/api/projects/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pct })
     });
   };
@@ -144,21 +142,20 @@ export default function GrowthPage({
     const status = isDone ? 'completed' : 'active';
     const pct = isDone ? 100 : 90;
     setProjects(projects.map(p => p.id === id ? { ...p, status, pct } : p));
-    await fetch(`/api/projects/${id}`, {
+    await authFetch(`/api/projects/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, pct })
     });
   };
 
   const handleDeleteProject = async (id) => {
     setProjects(projects.filter(p => p.id !== id));
-    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    await authFetch(`/api/projects/${id}`, { method: 'DELETE' });
   };
 
   const handleDeleteEvent = async (id) => {
     setEvents(events.filter(e => e.id !== id));
-    await fetch(`/api/events/${id}`, { method: 'DELETE' });
+    await authFetch(`/api/events/${id}`, { method: 'DELETE' });
   };
 
   // ==========================================
