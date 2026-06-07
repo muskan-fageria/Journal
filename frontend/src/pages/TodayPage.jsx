@@ -15,7 +15,8 @@ export default function TodayPage({
   effectiveDateStr,
   toast,
   saveTodayStateAPI,
-  saveSocialAPI
+  saveSocialAPI,
+  userProfile
 }) {
   const [newHobbyName, setNewHobbyName] = useState('');
 
@@ -188,9 +189,7 @@ export default function TodayPage({
 
   // Streak calculations for Consistency Card
   const getOverallStreak = () => {
-    // Count consecutive days with entries OR todayState completed
-    // Simply look at task history and todayState ratings
-    return 3; // Placeholder for now, or calculated from entries
+    return userProfile?.streak || 0;
   };
 
   // ==========================================
@@ -235,7 +234,7 @@ export default function TodayPage({
 
   return (
     <div className="page active animate-fade-in">
-      <header className="max-w-4xl pt-8 md:pt-12">
+      <header className="max-w-4xl pt-0">
         <span className="font-label-caps text-secondary mb-4 block tracking-widest uppercase select-none">
           {dateStr}
         </span>
@@ -247,7 +246,7 @@ export default function TodayPage({
 
       {/* Reflection & Rhythms */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-section-gap">
-        <div className="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-12 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
+        <div className="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-10 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
           <div className="relative z-10">
             <span className="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase select-none">Current State</span>
@@ -314,11 +313,12 @@ export default function TodayPage({
         </div>
 
         {/* Rhythms */}
-        <div className="lg:col-span-4 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 flex flex-col relative overflow-hidden group bento-card">
+        <div className="lg:col-span-4 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-10 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-          <div className="relative z-10 flex flex-col h-full">
+          
+          <div className="relative z-10">
             <span className="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase select-none">Rhythms</span>
-            <div className="flex flex-col gap-4 flex-grow justify-start">
+            <div className="flex flex-col gap-4">
               {hobbies.length > 0 ? (
                 hobbies.map(hobby => {
                   const isDone = tasks.some(t => t.cat === 'habit' && t.name === hobby.name && t.date === effectiveDateStr && t.done);
@@ -369,8 +369,9 @@ export default function TodayPage({
                 </div>
               )}
             </div>
-            
-            <div className="mt-8 border-t border-white/10 pt-6">
+          </div>
+          
+          <div className="relative z-10 mt-8 border-t border-white/10 pt-6">
               <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-3 select-none">Add Rhythm</span>
               <div className="flex gap-2">
                 <input 
@@ -389,9 +390,9 @@ export default function TodayPage({
                 </button>
               </div>
             </div>
-          </div>
         </div>
       </section>
+
 
       {/* Vitality & Consistency */}
       <section className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
@@ -549,7 +550,7 @@ export default function TodayPage({
               <span className="text-xs text-on-surface-variant">{getSocialTimeFormatted(totalSocialTime)} Total</span>
             </div>
 
-            <div className="flex flex-col gap-4 overflow-y-auto pr-2" style={{ maxHeight: '250px' }}>
+            <div className="flex flex-col gap-4">
               {Object.values(SOCIAL_APPS).map((app) => {
                 const currentMins = socialData[app.key] || 0;
                 return (

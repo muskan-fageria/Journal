@@ -3,7 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { supabase } from './supabaseClient.js';
+import { supabase, createUserClient } from './supabaseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,63 +69,82 @@ const authenticateUser = async (req, res, next) => {
   }
 
   req.user = user;
+  req.supabase = createUserClient(token);
   next();
 };
 
 app.use('/api', authenticateUser);
 
 // ==========================================
-// TASKS ENDPOINTS
+// TASKS ENDPOINTS (Supabase)
 // ==========================================
-app.get('/api/tasks', (req, res) => {
-  const db = readDB();
-  res.json(db.tasks || []);
+app.get('/api/tasks', async (req, res) => {
+  const { data, error } = await req.supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-app.post('/api/tasks', (req, res) => {
-  const db = readDB();
+app.post('/api/tasks', async (req, res) => {
   const task = {
-    id: generateId(),
+    user_id: req.user.id,
     done: false,
     date: new Date().toISOString().split('T')[0],
     ...req.body
   };
-  db.tasks = db.tasks || [];
-  db.tasks.push(task);
-  writeDB(db);
-  res.status(201).json(task);
+  const { data, error } = await req.supabase
+    .from('tasks')
+    .insert(task)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
 });
 
-app.put('/api/tasks/:id', (req, res) => {
-  const db = readDB();
+app.put('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
-  const index = db.tasks.findIndex(t => t.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Task not found' });
-  }
-  db.tasks[index] = { ...db.tasks[index], ...req.body };
-  writeDB(db);
-  res.json(db.tasks[index]);
+  const { data, error } = await req.supabase
+    .from('tasks')
+    .update(req.body)
+    .eq('id', id)
+    .eq('user_id', req.user.id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Task not found' });
+  res.json(data);
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
-  const db = readDB();
+app.delete('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
-  db.tasks = (db.tasks || []).filter(t => t.id !== id);
-  writeDB(db);
+  const { error } = await req.supabase
+    .from('tasks')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
   res.json({ success: true });
 });
 
-app.delete('/api/tasks', (req, res) => {
-  const db = readDB();
-  // If ids provided in query or body, delete those, otherwise clear all completed
+app.delete('/api/tasks', async (req, res) => {
   const { ids } = req.body;
-  if (Array.isArray(ids)) {
-    db.tasks = (db.tasks || []).filter(t => !ids.includes(t.id));
+  if (Array.isArray(ids) && ids.length > 0) {
+    const { error } = await req.supabase
+      .from('tasks')
+      .delete()
+      .in('id', ids)
+      .eq('user_id', req.user.id);
+    if (error) return res.status(500).json({ error: error.message });
   } else {
-    db.tasks = (db.tasks || []).filter(t => !t.done);
+    const { error } = await req.supabase
+      .from('tasks')
+      .delete()
+      .eq('done', true)
+      .eq('user_id', req.user.id);
+    if (error) return res.status(500).json({ error: error.message });
   }
-  writeDB(db);
   res.json({ success: true });
 });
 
@@ -200,44 +219,54 @@ app.delete('/api/events/:id', (req, res) => {
 });
 
 // ==========================================
-// HOBBIES (RHYTHMS) ENDPOINTS
+// HOBBIES (RHYTHMS) ENDPOINTS (Supabase)
 // ==========================================
-app.get('/api/hobbies', (req, res) => {
-  const db = readDB();
-  res.json(db.hobbies || []);
+app.get('/api/hobbies', async (req, res) => {
+  const { data, error } = await req.supabase
+    .from('hobbies')
+    .select('*')
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-app.post('/api/hobbies', (req, res) => {
-  const db = readDB();
+app.post('/api/hobbies', async (req, res) => {
   const hobby = {
-    id: generateId(),
+    user_id: req.user.id,
     mins: 0,
     streak: 0,
     ...req.body
   };
-  db.hobbies = db.hobbies || [];
-  db.hobbies.push(hobby);
-  writeDB(db);
-  res.status(201).json(hobby);
+  const { data, error } = await req.supabase
+    .from('hobbies')
+    .insert(hobby)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
 });
 
-app.put('/api/hobbies/:id', (req, res) => {
-  const db = readDB();
+app.put('/api/hobbies/:id', async (req, res) => {
   const { id } = req.params;
-  const index = db.hobbies.findIndex(h => h.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Hobby not found' });
-  }
-  db.hobbies[index] = { ...db.hobbies[index], ...req.body };
-  writeDB(db);
-  res.json(db.hobbies[index]);
+  const { data, error } = await req.supabase
+    .from('hobbies')
+    .update(req.body)
+    .eq('id', id)
+    .eq('user_id', req.user.id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-app.delete('/api/hobbies/:id', (req, res) => {
-  const db = readDB();
+app.delete('/api/hobbies/:id', async (req, res) => {
   const { id } = req.params;
-  db.hobbies = (db.hobbies || []).filter(h => h.id !== id);
-  writeDB(db);
+  const { error } = await req.supabase
+    .from('hobbies')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
   res.json({ success: true });
 });
 
@@ -270,39 +299,117 @@ app.post('/api/entries', (req, res) => {
 });
 
 // ==========================================
-// TODAY STATE ENDPOINTS
+// TODAY STATE ENDPOINTS (Supabase)
 // ==========================================
-app.get('/api/today', (req, res) => {
-  const db = readDB();
-  res.json(db.todayState || {});
+app.get('/api/today', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const { data, error } = await req.supabase
+    .from('today_state')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .eq('date', today)
+    .maybeSingle();
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.json({});
+  // Map DB snake_case to frontend camelCase
+  res.json({
+    mood: data.mood || '',
+    weather: data.weather || '',
+    rating: data.rating || 0,
+    energy: data.energy || 5.0,
+    focus: data.focus || 5.0,
+    stress: data.stress || 0,
+    remark: data.remark || '',
+    gratitude: data.gratitude || '',
+    oneWord: data.one_word || '',
+    steps: data.steps || '0',
+    water: data.water || '0L',
+    sleep: data.sleep || '0h',
+    exercise: data.exercise || '0m',
+    productive: data.productive || '0',
+    mindfulness: data.mindfulness || '0 Minutes',
+    mindGoal: data.mind_goal || '150 Minutes',
+  });
 });
 
-app.put('/api/today', (req, res) => {
-  const db = readDB();
-  db.todayState = { ...(db.todayState || {}), ...req.body, updated_at: new Date().toISOString() };
-  writeDB(db);
-  res.json(db.todayState);
+app.put('/api/today', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const payload = {
+    user_id: req.user.id,
+    date: today,
+    mood: req.body.mood,
+    weather: req.body.weather,
+    rating: req.body.rating,
+    energy: req.body.energy,
+    focus: req.body.focus,
+    stress: req.body.stress,
+    remark: req.body.remark,
+    gratitude: req.body.gratitude,
+    one_word: req.body.oneWord,
+    steps: req.body.steps,
+    water: req.body.water,
+    sleep: req.body.sleep,
+    exercise: req.body.exercise,
+    productive: req.body.productive,
+    mindfulness: req.body.mindfulness,
+    mind_goal: req.body.mindGoal,
+    updated_at: new Date().toISOString(),
+  };
+  // Remove undefined keys
+  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+
+  const { data, error } = await req.supabase
+    .from('today_state')
+    .upsert(payload, { onConflict: 'user_id,date' })
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 // ==========================================
-// SOCIAL DATA ENDPOINTS
+// SOCIAL DATA ENDPOINTS (Supabase)
 // ==========================================
-app.get('/api/social', (req, res) => {
-  const db = readDB();
-  res.json(db.socialData || {});
+app.get('/api/social', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const { data, error } = await req.supabase
+    .from('social_data')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .eq('date', today);
+  if (error) return res.status(500).json({ error: error.message });
+  // Convert array of rows into { app_id: minutes } object for frontend
+  const result = {};
+  (data || []).forEach(row => { result[row.app_id] = row.minutes; });
+  res.json(result);
 });
 
-app.put('/api/social', (req, res) => {
-  const db = readDB();
+app.put('/api/social', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
   const { app_id, minutes } = req.body;
-  db.socialData = db.socialData || {};
-  if (app_id) {
-    db.socialData[app_id] = minutes;
-  } else {
-    db.socialData = { ...db.socialData, ...req.body };
-  }
-  writeDB(db);
-  res.json(db.socialData);
+  if (!app_id) return res.status(400).json({ error: 'app_id required' });
+
+  const payload = {
+    user_id: req.user.id,
+    date: today,
+    app_id,
+    minutes,
+  };
+
+  const { error } = await req.supabase
+    .from('social_data')
+    .upsert(payload, { onConflict: 'user_id,date,app_id' });
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Return the full social data object
+  const { data: allData } = await req.supabase
+    .from('social_data')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .eq('date', today);
+  const result = {};
+  (allData || []).forEach(row => { result[row.app_id] = row.minutes; });
+  res.json(result);
 });
 
 // ==========================================

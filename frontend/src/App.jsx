@@ -71,9 +71,9 @@ export default function App() {
     mindGoal: '150 Minutes'
   });
   const [socialData, setSocialData] = useState({
-    'ig-slider': 45,
-    'sl-slider': 70,
-    'bk-slider': 20
+    'ig-slider': 0,
+    'sl-slider': 0,
+    'bk-slider': 0
   });
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -278,7 +278,7 @@ export default function App() {
 
   const getEffectiveDateStr = () => {
     const d = getEffectiveDate();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return d.toISOString().split('T')[0];
   };
 
   const formatDateStrDisplay = () => {
@@ -290,6 +290,39 @@ export default function App() {
     const d = getEffectiveDate();
     return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
   };
+
+  const getOverallStreak = () => {
+    if (!entries || entries.length === 0) return 0;
+    const sortedDates = [...new Set(entries.map(e => e.date))].sort().reverse();
+    const todayStr = getEffectiveDateStr();
+    
+    const yesterday = getEffectiveDate();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    if (sortedDates[0] !== todayStr && sortedDates[0] !== yesterdayStr) return 0;
+    
+    let streak = 1;
+    let current = new Date(sortedDates[0] + 'T12:00:00');
+    for (let i = 1; i < sortedDates.length; i++) {
+      const expected = new Date(current);
+      expected.setDate(expected.getDate() - 1);
+      const expectedStr = expected.toISOString().split('T')[0];
+      if (sortedDates[i] === expectedStr) {
+        streak++;
+        current = expected;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const augmentedUserProfile = userProfile ? {
+    ...userProfile,
+    streak: getOverallStreak(),
+    total_entries: entries.length,
+  } : null;
 
   const effectiveDateStr = getEffectiveDateStr();
   const dateStrDisplay = formatDateStrDisplay();
@@ -381,7 +414,7 @@ export default function App() {
             todayState={todayState}
             tasks={tasks}
             dateStr={dateStrDisplay}
-            userProfile={userProfile}
+            userProfile={augmentedUserProfile}
           />
 
           {/* Main Content Pane */}
@@ -402,6 +435,7 @@ export default function App() {
             toast={triggerToast}
             saveTodayStateAPI={saveTodayStateAPI}
             saveSocialAPI={saveSocialAPI}
+            userProfile={augmentedUserProfile}
           />
         )}
 
@@ -442,7 +476,7 @@ export default function App() {
         {currentPage === 'profile' && (
           <ProfilePage 
             onLogout={handleLogout}
-            userProfile={userProfile}
+            userProfile={augmentedUserProfile}
           />
         )}
 
