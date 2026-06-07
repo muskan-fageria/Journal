@@ -15,8 +15,7 @@ export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks
     <nav className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50 overflow-y-auto custom-scrollbar">
       {/* Brand Header */}
       <div className="px-8 py-8 flex flex-col gap-2 shrink-0">
-        <span className="font-newsreader text-xl text-stone-100">Syllable</span>
-        <span className="font-sans text-xs tracking-widest uppercase text-stone-500">Digital Sanctuary</span>
+        <span className="font-newsreader text-2xl text-stone-100">My Journal</span>
       </div>
 
       {/* Main Navigation */}
