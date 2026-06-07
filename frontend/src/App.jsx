@@ -87,9 +87,16 @@ export default function App() {
   const [memories, setMemories] = useState([]);
 
   // Splash states
-  const [showSplash, setShowSplash] = useState(() => {
-    return !sessionStorage.getItem('introPlayed');
-  });
+  const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const introPlayed = sessionStorage.getItem('introPlayed');
+      if (!introPlayed) {
+        setShowSplash(true);
+      }
+    }
+  }, [isAuthenticated]);
 
   // Toast helper
   const triggerToast = (msg) => {
