@@ -1,0 +1,227 @@
+{
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "Morning yoga and deep breathing",
+      "due": "2026-05-10",
+      "priority": "low",
+      "repeat": "daily",
+      "notes": "15 minutes of quiet presence.",
+      "cat": "health",
+      "done": true,
+      "date": "2026-05-10"
+    },
+    {
+      "id": "t2",
+      "name": "Review journal entries and weekly metrics",
+      "due": "2026-05-10",
+      "priority": "medium",
+      "repeat": "weekly",
+      "notes": "Reflect on current state and habits.",
+      "cat": "work",
+      "done": true,
+      "date": "2026-05-10"
+    },
+    {
+      "id": "t3",
+      "name": "Read a chapter of 'Wabi-Sabi'",
+      "due": "2026-05-10",
+      "priority": "low",
+      "repeat": "none",
+      "notes": "Tending to the calm mindset.",
+      "cat": "personal",
+      "done": true,
+      "date": "2026-05-10"
+    }
+  ],
+  "projects": [
+    {
+      "id": "p1",
+      "name": "Zen Space Room Redesign",
+      "deadline": "2026-06-15",
+      "desc": "Setting up a physical sanctuary in the east corner of the room with plants and low light.",
+      "pct": 45,
+      "status": "active"
+    },
+    {
+      "id": "p2",
+      "name": "Digital Minimalism Audit",
+      "deadline": "2026-05-25",
+      "desc": "Cleaning up device home screens, restricting app notifications, and setting up strict screen timers.",
+      "pct": 80,
+      "status": "active"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "name": "Sunset Tea Ceremony",
+      "date": "2026-05-10",
+      "time": "18:00",
+      "cat": "personal",
+      "notes": "Silent tea session with soft wind chimes."
+    },
+    {
+      "id": "e2",
+      "name": "Community Forest Walking Session",
+      "date": "2026-05-14",
+      "time": "08:30",
+      "cat": "health",
+      "notes": "Mindful walking in nature."
+    }
+  ],
+  "hobbies": [
+    {
+      "id": "h1",
+      "name": "Morning Stillness",
+      "mins": 15,
+      "streak": 5
+    },
+    {
+      "id": "h2",
+      "name": "Reading",
+      "mins": 30,
+      "streak": 3
+    },
+    {
+      "id": "h3",
+      "name": "DSA Practice",
+      "mins": 45,
+      "streak": 0
+    },
+    {
+      "id": "pp13n538e",
+      "mins": 0,
+      "streak": 0,
+      "name": "sdfs"
+    }
+  ],
+  "entries": [
+    {
+      "id": "2dfnt7q29",
+      "created_at": "2026-06-07T08:48:00.826Z",
+      "date": "2026-06-07",
+      "dateStr": "Sun, June 7",
+      "mood": "Centered",
+      "weather": "☀️ Sunny",
+      "rating": 10,
+      "remark": "A peaceful start to the week. Enjoying the new React + Vite setup.",
+      "gratitude": "Thankful for progress and clean code.",
+      "oneWord": "Focused",
+      "tasks": [],
+      "energy": 5.6,
+      "focus": 8.2,
+      "productive": "0",
+      "steps": "8,432",
+      "water": "1.3L",
+      "sleep": "10h 30m",
+      "exercise": "0m"
+    },
+    {
+      "id": "entry_1",
+      "date": "2026-05-09",
+      "dateStr": "Saturday, May 9",
+      "mood": "Centered",
+      "weather": "☀️ Sunny",
+      "rating": 8,
+      "remark": "Found a peaceful rhythm in the afternoon. Walking through the garden helped clear the clutter.",
+      "gratitude": "Thankful for quiet afternoons and good books.",
+      "oneWord": "Stillness",
+      "tasks": [
+        "Morning yoga and deep breathing",
+        "Organize workspace"
+      ],
+      "energy": 7.5,
+      "focus": 8,
+      "productive": "4",
+      "steps": "9,200",
+      "water": "2.1L",
+      "sleep": "7h 45m",
+      "exercise": "35m"
+    },
+    {
+      "id": "entry_2",
+      "date": "2026-05-08",
+      "dateStr": "Friday, May 8",
+      "mood": "Flowing",
+      "weather": "🌧️ Rainy",
+      "rating": 9,
+      "remark": "Rainy weather brought a beautiful silence. Worked efficiently on the redesign project.",
+      "gratitude": "Grateful for warm tea and cozy shelter.",
+      "oneWord": "Nourish",
+      "tasks": [
+        "Read Wabi-Sabi",
+        "Refactor server code"
+      ],
+      "energy": 8,
+      "focus": 9,
+      "productive": "6",
+      "steps": "6,100",
+      "water": "1.8L",
+      "sleep": "8h 15m",
+      "exercise": "50m"
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem_1",
+      "title": "\"The stillness of the morning reveals what the noise of the day obscures.\"",
+      "content": "A beautiful silent walk through the wet pine woods today.",
+      "category": "Clarity",
+      "icon": "psychology",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuAKkJbRuw5NucnVH8yw0fBE6S-WljtrBt_ZygfieCYQsZ6Tq-auy4ko3R-RjWn3XRFO2tGsTRVtkovmoYaWjhtRQvNOyMl-oh_vIot3mAiRLiPau527mxiwSNNdG8ZfgCNgmFY9NDAH6F3giIlhMSlxwIVGFL1ZH52qh8XE8-OaVu2P_7XXhvwbLr6jixwEA8pGYtz91Mzg2cTh-D3KziTFF2zYAjhH4D-PplK0jerLcu3QNJtAkZbDm48tOt_e-18KVZT1USk9c34",
+      "created_at": "2026-10-14T08:00:00.000Z"
+    },
+    {
+      "id": "mem_2",
+      "title": "",
+      "content": "A brief moment of profound gratitude while watching the rain.",
+      "category": "Stillness",
+      "icon": "self_improvement",
+      "image_url": "",
+      "created_at": "2026-10-10T08:00:00.000Z"
+    },
+    {
+      "id": "mem_3",
+      "title": "\"Breathing out the weight.\"",
+      "content": "A wide open shore line, letting the thoughts drift out with the tide.",
+      "category": "Introspection",
+      "icon": "spa",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuB-DcJUEDAbP02288KGewPJvsPDBeLYTzlcaebyYt-w6o-RPj6rCOlKs0OrHkj1byv3xMe5ZOU80UL_hTVfLYaiCLNnr_fqBZ5skOITtAhYItRpssde64oksiwiKLOMMv5CKdWetWoTuJuSSrzBDmWKJncvoW2eN8GXAi3URXaDsfgpLYVepNE2so--D6f4brn-ICU_18JTxSaVVDLbxWR8AXzv7-dNBrIzIcee5O9dEynDYApGKUaX1WJVJwQm6r2RO6UIf8CFSmM",
+      "created_at": "2026-10-02T08:00:00.000Z"
+    },
+    {
+      "id": "mem_4",
+      "title": "Space Between Thoughts",
+      "content": "Found space between the thoughts. The tension in my shoulders finally dissolved after a long walk through the mist.",
+      "category": "Stillness",
+      "icon": "spa",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuB72VJsYqcriR8yXkl-EXFMyyyDwL9wkOKIk9Rczs-IQ7rkK5tTFb0g9GYqHZff0PeUXrtfL2lPW43WGbZfO_EXVrbAVpnUU5HIG1b7yIVKnTpSm59Q1eL6KaDrEHqpfC2N0u-T0Z8PCP3ZAMf-G2vBYrmEx0ft-5WgT5qkckQ0xT6sJDksZsZfXUfCHSrDeYeqt2EkamDmQzqGLFkMiAr5G4hc_H_S28y_hgzC05QxmwoP6zSWkm1Dx9NV76DfF5i4x9So7e_cmGo",
+      "created_at": "2026-09-28T08:00:00.000Z"
+    }
+  ],
+  "socialData": {
+    "ig-slider": 45,
+    "sl-slider": 95,
+    "bk-slider": 89
+  },
+  "todayState": {
+    "mood": "Centered",
+    "weather": "☀️ Sunny",
+    "rating": 10,
+    "energy": 5.6,
+    "focus": 8.2,
+    "stress": 2,
+    "remark": "A peaceful start to the week. Enjoying the new React + Vite setup.",
+    "gratitude": "Thankful for progress and clean code.",
+    "oneWord": "Focused",
+    "steps": "5,800",
+    "water": "2.1L",
+    "sleep": "8h 30m",
+    "exercise": "35m",
+    "productive": "0",
+    "mindfulness": "0 Minutes",
+    "mindGoal": "150 Minutes",
+    "updated_at": "2026-06-07T09:07:15.411Z"
+  }
+}
