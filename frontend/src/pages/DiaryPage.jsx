@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { authFetch } from '../utils/authFetch';
 
 export default function DiaryPage({ toast }) {
   const [entries, setEntries] = useState([]);
@@ -13,7 +14,7 @@ export default function DiaryPage({ toast }) {
 
   const fetchDiary = async () => {
     try {
-      const res = await fetch('/api/diary');
+      const res = await authFetch('/api/diary');
       const data = await res.json();
       setEntries(data);
       if (data.length > 0) {
@@ -59,15 +60,13 @@ export default function DiaryPage({ toast }) {
 
       let res;
       if (currentEntry.isNew) {
-        res = await fetch('/api/diary', {
+        res = await authFetch('/api/diary', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch(`/api/diary/${currentEntry.id}`, {
+        res = await authFetch(`/api/diary/${currentEntry.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { authFetch } from '../utils/authFetch';
 
 // Hardcoded default bento cards to match the reference design and screen mockup
 const defaultMemories = [
@@ -140,9 +141,8 @@ export default function MemoryPage({ memories, setMemories, toast }) {
     };
 
     try {
-      const res = await fetch('/api/memories', {
+      const res = await authFetch('/api/memories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newMemory)
       });
       const data = await res.json();

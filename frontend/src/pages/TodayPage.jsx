@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ElasticSlider from '../components/ElasticSlider';
+import { authFetch } from '../utils/authFetch';
 
 export default function TodayPage({ 
   todayState, 
@@ -53,9 +54,8 @@ export default function TodayPage({
     if (exists) return toast('Rhythm already exists');
 
     try {
-      const response = await fetch('/api/hobbies', {
+      const response = await authFetch('/api/hobbies', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, mins: 0, streak: 0 })
       });
       const data = await response.json();
@@ -70,16 +70,15 @@ export default function TodayPage({
 
   const handleDeleteHobby = async (hobbyId, hobbyName) => {
     try {
-      await fetch(`/api/hobbies/${hobbyId}`, { method: 'DELETE' });
+      await authFetch(`/api/hobbies/${hobbyId}`, { method: 'DELETE' });
       setHobbies(hobbies.filter(h => h.id !== hobbyId));
       
       // Also clean up tracking tasks for this rhythm
       const tasksToKeep = tasks.filter(t => !(t.cat === 'habit' && t.name === hobbyName));
       setTasks(tasksToKeep);
       
-      await fetch('/api/tasks', {
+      await authFetch('/api/tasks', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: tasks.filter(t => t.cat === 'habit' && t.name === hobbyName).map(t => t.id) })
       });
 
@@ -98,7 +97,7 @@ export default function TodayPage({
       const existing = tasks.find(t => t.cat === 'habit' && t.name === hobbyName && t.date === effectiveDateStr);
       if (existing) {
         setTasks(tasks.filter(t => t.id !== existing.id));
-        await fetch(`/api/tasks/${existing.id}`, { method: 'DELETE' });
+        await authFetch(`/api/tasks/${existing.id}`, { method: 'DELETE' });
       }
     } else {
       // Toggle on: create completed task
@@ -112,9 +111,8 @@ export default function TodayPage({
         date: effectiveDateStr
       };
       
-      const response = await fetch('/api/tasks', {
+      const response = await authFetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTask)
       });
       const data = await response.json();

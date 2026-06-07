@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { supabase } from './supabaseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,28 @@ function writeDB(data) {
 function generateId() {
   return Math.random().toString(36).substring(2, 11);
 }
+
+// ==========================================
+// AUTHENTICATION MIDDLEWARE
+// ==========================================
+const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or malformed Authorization header' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+
+  req.user = user;
+  next();
+};
+
+app.use('/api', authenticateUser);
 
 // ==========================================
 // TASKS ENDPOINTS

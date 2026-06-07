@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ElasticSlider from '../components/ElasticSlider';
+import { authFetch } from '../utils/authFetch';
 
 export default function GrowthPage({ 
   tasks, 
@@ -44,9 +45,8 @@ export default function GrowthPage({
       done: false
     };
     try {
-      const res = await fetch('/api/tasks', {
+      const res = await authFetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTask)
       });
       const data = await res.json();
@@ -70,9 +70,8 @@ export default function GrowthPage({
       cat: 'personal'
     };
     try {
-      const res = await fetch('/api/events', {
+      const res = await authFetch('/api/events', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEvent)
       });
       const data = await res.json();
@@ -97,9 +96,8 @@ export default function GrowthPage({
       status: 'active'
     };
     try {
-      const res = await fetch('/api/projects', {
+      const res = await authFetch('/api/projects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProject)
       });
       const data = await res.json();

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks, dateStr }) {
+export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks, dateStr, userProfile }) {
   const completedTasksCount = tasks.filter(t => t.done).length;
 
   const navItems = [
@@ -67,10 +67,19 @@ export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks
       </div>
 
       {/* Sidebar Footer */}
-      <div className="px-8 py-8 mt-auto flex flex-col gap-4 shrink-0 border-t border-white/5">
-        <div className="font-sans text-xs tracking-widest text-stone-500">
-          {dateStr}
-        </div>
+      <div className="mt-auto flex flex-col shrink-0 border-t border-white/5">
+        <button 
+          onClick={() => setCurrentPage('profile')}
+          className={`flex items-center gap-3 px-8 py-6 w-full text-left transition-colors ${currentPage === 'profile' ? 'bg-white/5 text-stone-200' : 'hover:bg-white/5 text-stone-500 hover:text-stone-300'}`}
+        >
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary/80 to-stone-800 flex items-center justify-center shrink-0 border border-black shadow-inner">
+            <span className="font-newsreader text-sm text-stone-900 font-bold">{userProfile?.initials || '??'}</span>
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="font-sans text-xs tracking-widest uppercase truncate">Profile</span>
+            <span className="font-sans text-[10px] truncate opacity-70">{userProfile?.email || 'Loading...'}</span>
+          </div>
+        </button>
       </div>
     </nav>
   );

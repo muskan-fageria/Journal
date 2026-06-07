@@ -7,10 +7,49 @@ import GrowthPage from './pages/GrowthPage';
 import ArchivePage from './pages/ArchivePage';
 import MemoryPage from './pages/MemoryPage';
 import DiaryPage from './pages/DiaryPage';
+import LoginPage from './pages/LoginPage';
+import ProfilePage from './pages/ProfilePage';
+import { supabase } from './utils/supabase';
+import { authFetch } from './utils/authFetch';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('today');
   const [toastMessage, setToastMessage] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      if (session) fetchProfile(session.user.id);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      if (session) fetchProfile(session.user.id);
+      else setUserProfile(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (data) setUserProfile(data);
+    else if (error) console.error("Error fetching profile:", error);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setCurrentPage('today');
+  };
   
   // Data states
   const [todayState, setTodayState] = useState({
@@ -57,9 +96,11 @@ export default function App() {
   };
 
   // ==========================================
-  // FETCH ALL DATA
+  // FETCH ALL DATA (only when authenticated)
   // ==========================================
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const loadAllData = async () => {
       try {
         const [
@@ -72,14 +113,14 @@ export default function App() {
           entriesRes,
           memoriesRes
         ] = await Promise.all([
-          fetch('/api/today').then(r => r.json()),
-          fetch('/api/social').then(r => r.json()),
-          fetch('/api/tasks').then(r => r.json()),
-          fetch('/api/projects').then(r => r.json()),
-          fetch('/api/events').then(r => r.json()),
-          fetch('/api/hobbies').then(r => r.json()),
-          fetch('/api/entries').then(r => r.json()),
-          fetch('/api/memories').then(r => r.json())
+          authFetch('/api/today').then(r => r.json()),
+          authFetch('/api/social').then(r => r.json()),
+          authFetch('/api/tasks').then(r => r.json()),
+          authFetch('/api/projects').then(r => r.json()),
+          authFetch('/api/events').then(r => r.json()),
+          authFetch('/api/hobbies').then(r => r.json()),
+          authFetch('/api/entries').then(r => r.json()),
+          authFetch('/api/memories').then(r => r.json())
         ]);
 
         if (todayRes && Object.keys(todayRes).length > 0) setTodayState(todayRes);
@@ -97,16 +138,15 @@ export default function App() {
     };
 
     loadAllData();
-  }, []);
+  }, [isAuthenticated]);
 
   // ==========================================
   // SAVE API HELPERS
   // ==========================================
   const saveTodayStateAPI = async (updatedState) => {
     try {
-      await fetch('/api/today', {
+      await authFetch('/api/today', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedState)
       });
     } catch (err) {
@@ -116,9 +156,8 @@ export default function App() {
 
   const saveSocialAPI = async (appId, minutes) => {
     try {
-      await fetch('/api/social', {
+      await authFetch('/api/social', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ app_id: appId, minutes })
       });
     } catch (err) {
@@ -282,9 +321,8 @@ export default function App() {
     };
 
     try {
-      const res = await fetch('/api/entries', {
+      const res = await authFetch('/api/entries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
       });
       const data = await res.json();
@@ -332,17 +370,22 @@ export default function App() {
         </div>
       )}
 
-      {/* Sidebar Navigation */}
-      <Sidebar 
-        currentPage={currentPage} 
-        setCurrentPage={setCurrentPage} 
-        todayState={todayState}
-        tasks={tasks}
-        dateStr={dateStrDisplay}
-      />
+      {!isAuthenticated ? (
+        <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />
+      ) : (
+        <>
+          {/* Sidebar Navigation */}
+          <Sidebar 
+            currentPage={currentPage} 
+            setCurrentPage={setCurrentPage} 
+            todayState={todayState}
+            tasks={tasks}
+            dateStr={dateStrDisplay}
+            userProfile={userProfile}
+          />
 
-      {/* Main Content Pane */}
-      <main className="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap max-w-none pt-8 select-none">
+          {/* Main Content Pane */}
+          <main className="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap max-w-none pt-8 select-none">
         
         {currentPage === 'today' && (
           <TodayPage 
@@ -396,6 +439,13 @@ export default function App() {
           />
         )}
 
+        {currentPage === 'profile' && (
+          <ProfilePage 
+            onLogout={handleLogout}
+            userProfile={userProfile}
+          />
+        )}
+
         {/* Global Save Button for Today View */}
         {currentPage === 'today' && (
           <div className="flex justify-end border-t border-white/5 pt-8 mt-4 select-none">
@@ -408,6 +458,8 @@ export default function App() {
           </div>
         )}
       </main>
+      </>
+      )}
 
       {/* Toast Notification HUD */}
       {toastMessage && (
