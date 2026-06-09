@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ProfilePage({ onLogout, userProfile }) {
+export default function ProfilePage({ onLogout, userProfile, theme, setTheme }) {
   // Use real data, fallback to defaults if loading
   const user = userProfile || {
     email: 'Loading...',
@@ -78,6 +78,26 @@ export default function ProfilePage({ onLogout, userProfile }) {
               <span className="font-sans text-xs tracking-widest uppercase text-stone-500">Total Entries</span>
               <div className="font-newsreader text-5xl text-stone-200">{user.total_entries || 0}</div>
             </div>
+          </div>
+
+          {/* Theme Settings */}
+          <div className="bg-[#1a1c1a]/90 backdrop-blur-md rounded-2xl border border-white/5 p-6 flex flex-col gap-4 shadow-xl">
+             <h3 className="font-newsreader text-2xl text-stone-200">Theme Preference</h3>
+             <p className="font-sans text-sm text-stone-400">Customize the look and feel of your sanctuary.</p>
+             <div className="flex flex-wrap gap-4 mt-2">
+                <button 
+                  onClick={() => setTheme && setTheme('default')} 
+                  className={`px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'default' ? 'bg-secondary text-stone-900 border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
+                >
+                  Default
+                </button>
+                <button 
+                  onClick={() => setTheme && setTheme('primary')} 
+                  className={`px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'primary' ? 'bg-secondary text-stone-900 border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
+                >
+                  Primary Theme
+                </button>
+             </div>
           </div>
 
           {/* Subscription Plan */}

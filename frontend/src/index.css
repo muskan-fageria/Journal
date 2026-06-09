@@ -24,6 +24,123 @@
   --text-faint: #486448;
   --shadow:     rgba(0,0,0,0.4);
   --shadow-deep:rgba(0,0,0,0.6);
+  --color-secondary: #e6c183;
+  --color-secondary-rgb: 230,193,131;
+}
+
+.theme-primary {
+  --bg:         #ffffff;
+  --surface:    #f9f9f9;
+  --surface2:   #f0f0f0;
+  --surface3:   #e5e5e5;
+  --border:     #e5e5e5;
+  --border2:    #d4d4d4;
+  --olive:      #000000;
+  --olive-dim:  #333333;
+  --olive-glow: rgba(0,0,0,0.05);
+  --green:      #000000;
+  --green-dim:  #333333;
+  --moss:       #000000;
+  --sage:       #000000;
+  --sage-dim:   #555555;
+  --gold:       #000000;
+  --gold-lt:    #333333;
+  --text:       #000000;
+  --text-dim:   #555555;
+  --text-faint: #888888;
+  --color-secondary: #000000;
+  --color-secondary-rgb: 0,0,0;
+}
+
+/* LifeOs Image Filter */
+.logo-img { filter: invert(1); }
+.theme-primary .logo-img { filter: invert(0); }
+
+/* LifeOs CSS Overrides for specific hardcoded Tailwind utility classes to simplify transition */
+.theme-primary .text-stone-100,
+.theme-primary .text-stone-200,
+.theme-primary .text-stone-300 {
+  color: #000000 !important;
+}
+.theme-primary .text-stone-400,
+.theme-primary .text-stone-500 {
+  color: #555555 !important;
+}
+.theme-primary .bg-\[\#1a1c1a\]\/90,
+.theme-primary .bg-\[\#1a1c1a\]\/60 {
+  background-color: #ffffff !important;
+  border-color: #e5e5e5 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+.theme-primary .border-white\/5,
+.theme-primary .border-white\/10 {
+  border-color: #e5e5e5 !important;
+}
+.theme-primary .bg-stone-950\/30 {
+  background-color: #ffffff !important;
+  border-right-color: #e5e5e5 !important;
+}
+.theme-primary .hover\:bg-white\/5:hover {
+  background-color: #f0f0f0 !important;
+}
+.theme-primary .text-secondary {
+  color: #000000 !important;
+}
+.theme-primary .bg-secondary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+.theme-primary .bg-stone-950 {
+  background-color: #ffffff !important;
+}
+.theme-primary .from-\[\#1a1c1a\]\/90 {
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+.theme-primary .text-amber-200 {
+  color: #000000 !important;
+}
+.theme-primary .border-amber-200\/50 {
+  border-color: #000000 !important;
+}
+.theme-primary .bg-white\/5 {
+  background-color: #f0f0f0 !important;
+}
+.theme-primary .text-white\/20 {
+  color: #888888 !important;
+}
+.theme-primary .bg-background {
+  background-color: #ffffff !important;
+}
+.theme-primary .text-on-surface {
+  color: #000000 !important;
+}
+.theme-primary .text-on-surface-variant {
+  color: #555555 !important;
+}
+.theme-primary .bg-white\/\[0\.05\],
+.theme-primary .bg-white\/\[0\.03\] {
+  background-color: #f9f9f9 !important;
+  border-color: #e5e5e5 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+}
+.theme-primary .border-outline-variant\/30,
+.theme-primary .border-outline-variant\/20,
+.theme-primary .border-outline-variant {
+  border-color: #e5e5e5 !important;
+}
+.theme-primary .bg-surface-container-high {
+  background-color: #f0f0f0 !important;
+}
+.theme-primary .text-blue-300,
+.theme-primary .text-purple-300,
+.theme-primary .text-green-300 {
+  color: #000000 !important;
+}
+.theme-primary .bg-blue-300,
+.theme-primary .bg-purple-300,
+.theme-primary .bg-green-300 {
+  background-color: #000000 !important;
 }
 
 * {

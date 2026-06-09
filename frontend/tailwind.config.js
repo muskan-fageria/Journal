@@ -25,7 +25,7 @@ module.exports = {
         "on-error-container": "#ffdad6",
         "primary": "#bdcabe",
         "tertiary-container": "#152717",
-        "secondary": "#e6c183",
+        "secondary": "var(--color-secondary, #e6c183)",
         "surface-variant": "#353535",
         "on-tertiary": "#223524",
         "outline-variant": "#434843",

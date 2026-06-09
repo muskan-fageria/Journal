@@ -15,7 +15,7 @@ export default function Sidebar({ currentPage, setCurrentPage, todayState, tasks
     <nav className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-white/10 shadow-xl bg-stone-950/30 backdrop-blur-xl z-50 overflow-y-auto custom-scrollbar">
       {/* Brand Header */}
       <div className="px-8 py-8 flex flex-col gap-2 shrink-0">
-        <span className="font-newsreader text-2xl text-stone-100">My Journal</span>
+        <img src="/src/assets/logo/logo.png" alt="LifeOs" className="h-12 w-auto object-contain object-left logo-img" />
       </div>
 
       {/* Main Navigation */}

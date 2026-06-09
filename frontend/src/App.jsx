@@ -14,6 +14,7 @@ import { authFetch } from './utils/authFetch';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('today');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'default');
   const [toastMessage, setToastMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -267,6 +268,12 @@ export default function App() {
     );
   }, [currentPage]);
 
+  // Theme application
+  useEffect(() => {
+    document.documentElement.className = theme === 'default' ? '' : `theme-${theme}`;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   // ==========================================
   // DATE HELPERS
   // ==========================================
@@ -382,13 +389,17 @@ export default function App() {
 
   return (
     <>
-      {/* Background Deep Misty Forest */}
-      <div className="fixed inset-0 z-[-1] pointer-events-none select-none">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2070&auto=format&fit=crop')" }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
+      {/* Background */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none select-none app-background">
+        {theme === 'default' && (
+          <>
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2070&auto=format&fit=crop')" }}
+            ></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
+          </>
+        )}
       </div>
 
       {/* Premium Glassmorphic Loading Screen */}
@@ -410,8 +421,8 @@ export default function App() {
 
             {/* Text */}
             <div className="flex flex-col gap-2">
-              <h3 className="font-newsreader text-2xl text-stone-200 italic">Entering the Sanctuary</h3>
-              <p className="font-sans text-xs tracking-[0.2em] uppercase text-stone-500 animate-pulse">Gathering your thoughts...</p>
+              <h3 className="font-newsreader text-2xl text-stone-200 italic">{theme === 'default' ? 'Entering the Sanctuary' : 'Starting LifeOs'}</h3>
+              <p className="font-sans text-xs tracking-[0.2em] uppercase text-stone-500 animate-pulse">{theme === 'default' ? 'Gathering your thoughts...' : 'Booting systems...'}</p>
             </div>
           </div>
         </div>
@@ -506,6 +517,8 @@ export default function App() {
           <ProfilePage 
             onLogout={handleLogout}
             userProfile={augmentedUserProfile}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
 
