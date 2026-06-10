@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import LifeRing from '../components/LifeRing';
 import ElasticSlider from '../components/ElasticSlider';
 import { authFetch } from '../utils/authFetch';
 
@@ -16,12 +17,78 @@ export default function TodayPage({
   toast,
   saveTodayStateAPI,
   saveSocialAPI,
-  userProfile
+  userProfile,
+  handleSaveTodayEntry,
+  toggleGoalTracking
 }) {
+  const [activeSegment, setActiveSegment] = useState('mind');
+  const [hoveredRating, setHoveredRating] = useState(0);
   const [newHobbyName, setNewHobbyName] = useState('');
 
+  // Default values for ratings and reflections
+  const defaultRatings = {
+    health: 5,
+    work: 5,
+    learning: 5,
+    relationships: 5,
+    finance: 5,
+    mind: 5,
+    sleepQuality: 5,
+    weeklyWell: '',
+    weeklyAttention: '',
+    weeklyBalance: ''
+  };
+
+  // Parsing helper for JSON metadata in weather column
+  const getExtendedData = () => {
+    if (!todayState.weather) return defaultRatings;
+    try {
+      const parsed = JSON.parse(todayState.weather);
+      return { ...defaultRatings, ...parsed };
+    } catch (e) {
+      return defaultRatings;
+    }
+  };
+
+  const extData = getExtendedData();
+
+  const saveExtendedData = (newValues) => {
+    const current = getExtendedData();
+    const merged = { ...current, ...newValues };
+    const weatherString = JSON.stringify(merged);
+    
+    const updatedState = { ...todayState, weather: weatherString };
+    setTodayState(updatedState);
+    saveTodayStateAPI(updatedState);
+  };
+
   // ==========================================
-  // MOOD & RATING HANDLERS
+  // GREETINGS & MESSAGES
+  // ==========================================
+  const getGreetingAndMessage = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) {
+      return {
+        title: "Good Morning",
+        quote: "Your attention shapes your life. Take a breath before you begin."
+      };
+    } else if (hr < 17) {
+      return {
+        title: "Good Afternoon",
+        quote: "Small steps become meaningful change. Where is your focus right now?"
+      };
+    } else {
+      return {
+        title: "Good Evening",
+        quote: "Today is another chance to realign. Reflect on your journey tonight."
+      };
+    }
+  };
+
+  const { title: greetingTitle, quote: greetingQuote } = getGreetingAndMessage();
+
+  // ==========================================
+  // DAILY CHECK-IN HANDLERS
   // ==========================================
   const handleMoodSelect = (mood) => {
     const updated = { ...todayState, mood };
@@ -34,14 +101,13 @@ export default function TodayPage({
     const updated = { ...todayState, rating };
     setTodayState(updated);
     saveTodayStateAPI(updated);
-    toast(`Day rated ${rating}/10`);
+    toast(`Overall Day rated ${rating}/10`);
   };
 
-  const getRatingLabel = (n) => {
-    const labels = [
-      '', 'Terrible', 'Bad', 'Poor', 'Meh', 'Okay', 'Good', 'Great', 'Excellent', 'Amazing', 'Perfect 🌿'
-    ];
-    return n > 0 ? `${n}/10 — ${labels[n]}` : 'Pick a star to rate';
+  const handleStateSliderChange = (key, value) => {
+    const updated = { ...todayState, [key]: value };
+    setTodayState(updated);
+    saveTodayStateAPI(updated);
   };
 
   // ==========================================
@@ -74,7 +140,6 @@ export default function TodayPage({
       await authFetch(`/api/hobbies/${hobbyId}`, { method: 'DELETE' });
       setHobbies(hobbies.filter(h => h.id !== hobbyId));
       
-      // Also clean up tracking tasks for this rhythm
       const tasksToKeep = tasks.filter(t => !(t.cat === 'habit' && t.name === hobbyName));
       setTasks(tasksToKeep);
       
@@ -94,14 +159,12 @@ export default function TodayPage({
     const isDone = tasks.some(t => t.cat === 'habit' && t.name === hobbyName && t.date === effectiveDateStr && t.done);
     
     if (isDone) {
-      // Toggle off: delete task
       const existing = tasks.find(t => t.cat === 'habit' && t.name === hobbyName && t.date === effectiveDateStr);
       if (existing) {
         setTasks(tasks.filter(t => t.id !== existing.id));
         await authFetch(`/api/tasks/${existing.id}`, { method: 'DELETE' });
       }
     } else {
-      // Toggle on: create completed task
       const newTask = {
         name: hobbyName,
         cat: 'habit',
@@ -121,7 +184,6 @@ export default function TodayPage({
     }
   };
 
-  // Streak calculations
   const getRhythmStreak = (rhythmName) => {
     const doneDates = [...new Set(
       tasks
@@ -187,13 +249,8 @@ export default function TodayPage({
     return parseFloat(val.toString().replace(/[^\d.]/g, '')) || 0;
   };
 
-  // Streak calculations for Consistency Card
-  const getOverallStreak = () => {
-    return userProfile?.streak || 0;
-  };
-
   // ==========================================
-  // DIGITAL SPACE SOCIAL TIME HANDLERS
+  // SOCIAL TIME LIMIT SLIDER HANDLERS
   // ==========================================
   const handleSocialSlider = (appKey, minutes) => {
     const updated = { ...socialData, [appKey]: parseInt(minutes) || 0 };
@@ -208,434 +265,581 @@ export default function TodayPage({
   };
 
   const totalSocialTime = (socialData['ig-slider'] || 0) + (socialData['sl-slider'] || 0) + (socialData['bk-slider'] || 0);
-  const totalSocialHours = (totalSocialTime / 60).toFixed(1);
 
-  // SVG Screen Ring offset
-  const screenGoal = 6 * 60; // 6 hours
-  const strokeOffset = 264 - Math.min(1, totalSocialTime / screenGoal) * 264;
-
-  const SOCIAL_APPS = { 
-    'ig-slider': { name: 'Instagram', color: '#e1306c', icon: 'photo_camera', key: 'ig-slider', max: 120 }, 
-    'sl-slider': { name: 'Slack', color: '#4a154b', icon: 'forum', key: 'sl-slider', max: 180 }, 
-    'bk-slider': { name: 'Books', color: '#fbc02d', icon: 'menu_book', key: 'bk-slider', max: 120 } 
+  // ==========================================
+  // TASK FOCUS TODAY HANDLERS
+  // ==========================================
+  const handleToggleTask = async (id, currentVal) => {
+    const updatedVal = !currentVal;
+    setTasks(tasks.map(t => t.id === id ? { ...t, done: updatedVal } : t));
+    await authFetch(`/api/tasks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ done: updatedVal })
+    });
   };
 
-  // Handle elastic updates
-  const handleElasticChange = (key, val) => {
-    const updated = { ...todayState, [key]: val };
-    setTodayState(updated);
-    saveTodayStateAPI(updated);
+  const todayPriorities = tasks
+    .filter(t => t.due === effectiveDateStr && t.cat !== 'habit')
+    .slice(0, 3); // Get Top 3 priorities
+
+  // ==========================================
+  // UPCOMING EVENTS (TIMELINE)
+  // ==========================================
+  // We fetch events scheduled for today
+  const [todayEvents, setTodayEvents] = useState([]);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await authFetch('/api/events');
+        const data = await res.json();
+        const filtered = (data || []).filter(e => e.date === effectiveDateStr);
+        setTodayEvents(filtered);
+      } catch (err) {
+        console.error("Error loading events:", err);
+      }
+    };
+    fetchEvents();
+  }, [effectiveDateStr]);
+
+  // Segment accent colors matching the Life Ring
+  const segmentAccents = {
+    mind:          '#7C9A92',
+    health:        '#9B7E6B',
+    learning:      '#7B8FA8',
+    work:          '#8B8B6B',
+    relationships: '#A87B8F',
+    finance:       '#6B8B7B',
   };
 
-  const [greeting, setGreeting] = useState(() => {
-    const hr = new Date().getHours();
-    return hr < 12 ? 'Good morning ✦' : hr < 17 ? 'Good afternoon ✦' : 'Good evening ✦';
-  });
+  // Dimension details helper
+  const dimensionsMap = {
+    mind: {
+      title: 'Mind Sanctuary',
+      icon: 'spa',
+      desc: 'Cultivate mental clarity and inner stillness. Your mind is the lens through which you experience everything.',
+      questions: (
+        <div className="flex flex-col gap-4">
+          <div className="dimension-card">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-[14px]" style={{ color: segmentAccents.mind }}>self_improvement</span>
+              <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Mindfulness Practice</span>
+            </div>
+            <div className="flex items-baseline gap-3">
+              <input 
+                type="text" 
+                value={todayState.mindfulness || '0 min'} 
+                onChange={(e) => {
+                  const updated = { ...todayState, mindfulness: e.target.value };
+                  setTodayState(updated);
+                  saveTodayStateAPI(updated);
+                }}
+                className="bg-transparent border-b border-outline/50 text-2xl font-newsreader text-on-surface w-20 p-0 focus:ring-0 focus:border-secondary text-center" 
+              />
+              <span className="text-[10px] text-on-surface-variant tracking-wider">of</span>
+              <input 
+                type="text" 
+                value={todayState.mindGoal || '150 min'} 
+                onChange={(e) => {
+                  const updated = { ...todayState, mindGoal: e.target.value };
+                  setTodayState(updated);
+                  saveTodayStateAPI(updated);
+                }}
+                className="bg-transparent border-b border-outline/50 text-2xl font-newsreader text-on-surface w-24 p-0 focus:ring-0 focus:border-secondary text-center" 
+              />
+            </div>
+          </div>
+        </div>
+      )
+    },
+    health: {
+      title: 'Physical Vitality',
+      icon: 'favorite',
+      desc: 'Honor your body through rest, movement, and nourishment. The vessel that carries you deserves attention.',
+      questions: (
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { key: 'steps', label: 'Steps', icon: 'directions_walk', max: 10000, step: 100, format: (v) => Math.round(v).toLocaleString() },
+            { key: 'water', label: 'Water', icon: 'water_drop', max: 3.0, step: 0.1, format: (v) => parseFloat(v).toFixed(1) + 'L' },
+            { key: 'sleep', label: 'Sleep', icon: 'bedtime', max: 12, step: 0.25, format: (v) => { const hr = Math.floor(v); const min = Math.round((v - hr) * 60); return min > 0 ? `${hr}h ${min}m` : `${hr}h`; } },
+            { key: 'exercise', label: 'Exercise', icon: 'fitness_center', max: 120, step: 5, format: (v) => Math.round(v) + 'm' },
+          ].map(metric => (
+            <div key={metric.key} className="dimension-card flex flex-col gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.health }}>{metric.icon}</span>
+                <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">{metric.label}</span>
+              </div>
+              <span className="text-xl font-newsreader text-on-surface">{todayState[metric.key] || (metric.key === 'water' ? '0L' : metric.key === 'sleep' ? '0h' : metric.key === 'exercise' ? '0m' : '0')}</span>
+              <ElasticSlider
+                defaultValue={getHealthRaw(metric.key, todayState[metric.key])}
+                startingValue={0}
+                maxValue={metric.max}
+                stepSize={metric.step}
+                isStepped={true}
+                rangeColorClass="bg-secondary"
+                onChange={(val) => handleHealthSlider(metric.key, val)}
+                className="w-full"
+              />
+            </div>
+          ))}
+        </div>
+      )
+    },
+    learning: {
+      title: 'Lifelong Learning',
+      icon: 'school',
+      desc: 'Feed your curiosity and grow through books, practice, and new perspectives. Learning is the art of staying alive.',
+      questions: (
+        <div className="flex flex-col gap-3">
+          <div className="dimension-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.learning }}>auto_stories</span>
+                <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Reading Time</span>
+              </div>
+              <span className="text-xs text-on-surface font-newsreader">{getSocialTimeFormatted(socialData['bk-slider'] || 0)}</span>
+            </div>
+            <ElasticSlider
+              defaultValue={socialData['bk-slider'] || 0}
+              startingValue={0}
+              maxValue={120}
+              stepSize={5}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => handleSocialSlider('bk-slider', val)}
+              className="w-full"
+            />
+          </div>
+          <div className="dimension-card flex flex-col gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.learning }}>routine</span>
+              <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Daily Rhythms</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {hobbies.length > 0 ? (
+                hobbies.map(hobby => {
+                  const isDone = tasks.some(t => t.cat === 'habit' && t.name === hobby.name && t.date === effectiveDateStr && t.done);
+                  const streak = getRhythmStreak(hobby.name);
+                  return (
+                    <div 
+                      key={hobby.id} 
+                      className="flex items-center gap-3 cursor-pointer group py-0.5"
+                      onClick={() => toggleRhythm(hobby.name)}
+                    >
+                      <div className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all ${
+                        isDone ? 'bg-secondary/15 border-secondary text-secondary' : 'border-outline group-hover:border-secondary/50'
+                      }`} style={{ width: 18, height: 18 }}>
+                        {isDone && <span className="material-symbols-outlined text-[11px] font-bold">check</span>}
+                      </div>
+                      <span className={`text-xs ${isDone ? 'text-on-surface-variant line-through opacity-60' : 'text-on-surface'}`}>
+                        {hobby.name}
+                      </span>
+                      {streak > 0 && (
+                        <span className="text-[9px] font-semibold flex items-center gap-0.5 ml-auto" style={{ color: segmentAccents.learning }}>
+                          <span className="material-symbols-outlined text-[10px]">local_fire_department</span>
+                          {streak}d
+                        </span>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center text-on-surface-variant italic text-xs py-2">
+                  No active rhythms yet.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    work: {
+      title: 'Intentional Work',
+      icon: 'work',
+      desc: 'Deep focus without burnout. Align your energy with your most important work today.',
+      questions: (
+        <div className="flex flex-col gap-3">
+          <div className="dimension-card flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.work }}>target</span>
+              <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Focus Priorities</span>
+            </div>
+            <span className="text-lg font-newsreader text-on-surface">
+              {todayPriorities.length > 0 
+                ? `${todayPriorities.filter(t => t.done).length} of ${todayPriorities.length} complete` 
+                : 'No priorities set'}
+            </span>
+          </div>
+        </div>
+      )
+    },
+    relationships: {
+      title: 'Deep Relationships',
+      icon: 'group',
+      desc: 'Meaningful connections sustain us. Tend to friendships, family, and social boundaries.',
+      questions: (
+        <div className="flex flex-col gap-3">
+          <div className="dimension-card flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.relationships }}>phone_android</span>
+                <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Screen Boundaries</span>
+              </div>
+              <span className="text-[10px] text-on-surface-variant">{getSocialTimeFormatted(totalSocialTime)} total</span>
+            </div>
+            
+            {[
+              { key: 'ig-slider', label: 'Instagram', max: 120 },
+              { key: 'sl-slider', label: 'Slack', max: 180 },
+            ].map(app => (
+              <div key={app.key} className="flex flex-col gap-1">
+                <div className="flex justify-between text-xs text-on-surface">
+                  <span>{app.label}</span>
+                  <span className="font-newsreader">{getSocialTimeFormatted(socialData[app.key] || 0)}</span>
+                </div>
+                <ElasticSlider
+                  defaultValue={socialData[app.key] || 0}
+                  startingValue={0}
+                  maxValue={app.max}
+                  stepSize={5}
+                  isStepped={true}
+                  rangeColorClass="bg-secondary"
+                  onChange={(val) => handleSocialSlider(app.key, val)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+    finance: {
+      title: 'Financial Alignment',
+      icon: 'payments',
+      desc: 'Mindful spending is a form of self-respect. Track and reflect on your relationship with money.',
+      questions: (
+        <div className="flex flex-col gap-3">
+          <div className="dimension-card flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[13px]" style={{ color: segmentAccents.finance }}>account_balance</span>
+              <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Spend Check-In</span>
+            </div>
+            <span className="text-xs text-on-surface-variant leading-relaxed italic">
+              Did you align with your budget and values today?
+            </span>
+          </div>
+        </div>
+      )
+    }
+  };
 
   return (
-    <div className="page active animate-fade-in">
-      <header className="max-w-4xl pt-0">
-        <span className="font-label-caps text-secondary mb-4 block tracking-widest uppercase select-none">
-          {dateStr}
-        </span>
-        <h1 className="font-h1 text-h1 text-on-surface mb-6 select-none">{greeting}</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl select-none">
-          How is your day unfolding? Take a breath before you begin.
-        </p>
+    <div className="page active animate-fade-in w-full max-w-6xl mx-auto flex flex-col gap-10 pb-20 select-none">
+      
+      {/* SECTION 1: HEADER */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-outline pb-6">
+        <div className="flex flex-col gap-1">
+          <span className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase mb-1">
+            {dateStr}
+          </span>
+          <h1 className="font-h1 text-4xl text-on-surface font-semibold">{greetingTitle}</h1>
+          <p className="font-sans text-xs text-on-surface-variant italic mt-1">
+            {greetingQuote}
+          </p>
+        </div>
       </header>
 
-      {/* Reflection & Rhythms */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-section-gap">
-        <div className="lg:col-span-8 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-10 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-          <div className="relative z-10">
-            <span className="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase select-none">Current State</span>
-            <h2 className="font-h2 text-h2 text-on-surface max-w-xl leading-snug mb-6 select-none">How does your spirit feel?</h2>
-            
-            <div className="mood-picker flex flex-wrap gap-4 mb-8">
+      {/* SECTION 2: DAILY CHECK-IN */}
+      <section className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+        <div className="flex flex-col gap-1">
+          <span className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase">
+            Daily Check-In
+          </span>
+          <h2 className="font-newsreader text-2xl text-on-surface">How is your state right now?</h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Mood Picker */}
+          <div className="lg:col-span-6 flex flex-col gap-3">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider select-none">
+              Spirit & Mood
+            </span>
+            <div className="flex flex-wrap gap-2.5">
               {[
-                { name: 'Flowing', icon: 'water_drop' },
-                { name: 'Light', icon: 'air' },
-                { name: 'Heavy', icon: 'cloud' },
-                { name: 'Restless', icon: 'local_fire_department' },
-                { name: 'Centered', icon: 'spa' }
+                { name: 'Flowing', icon: 'water_drop', colorTheme: { selected: 'bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400', hover: 'hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/5' } },
+                { name: 'Light', icon: 'air', colorTheme: { selected: 'bg-sky-500/10 border-sky-500 text-sky-600 dark:text-sky-400', hover: 'hover:border-sky-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-500/5' } },
+                { name: 'Heavy', icon: 'cloud', colorTheme: { selected: 'bg-stone-500/10 border-stone-500 text-stone-600 dark:text-stone-400', hover: 'hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-400 hover:bg-stone-500/5' } },
+                { name: 'Restless', icon: 'local_fire_department', colorTheme: { selected: 'bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400', hover: 'hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-500/5' } },
+                { name: 'Centered', icon: 'spa', colorTheme: { selected: 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400', hover: 'hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/5' } }
               ].map(moodItem => {
                 const isSelected = todayState.mood === moodItem.name;
                 return (
                   <button 
                     key={moodItem.name}
-                    className={`mood-btn flex flex-col items-center gap-4 p-5 rounded-xl border border-transparent hover:bg-white/5 hover:border-outline-variant/30 transition-all group/mood w-28 cursor-pointer ${
-                      isSelected ? 'selected border-secondary/30 bg-white/5' : ''
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs tracking-wider transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-95 ${
+                      isSelected 
+                        ? `${moodItem.colorTheme.selected} font-medium shadow-sm` 
+                        : `bg-transparent border-outline text-on-surface-variant ${moodItem.colorTheme.hover}`
                     }`}
                     onClick={() => handleMoodSelect(moodItem.name)}
                   >
-                    <span 
-                      className={`material-symbols-outlined text-4xl text-on-surface-variant group-hover/mood:text-secondary transition-colors ${
-                        isSelected ? 'text-secondary' : ''
-                      }`}
-                      style={{ fontVariationSettings: "'FILL' 0, 'wght' 200" }}
-                    >
-                      {moodItem.icon}
-                    </span>
-                    <span className={`font-label-caps text-[11px] tracking-widest text-on-surface-variant group-hover/mood:text-on-surface uppercase ${
-                      isSelected ? 'text-on-surface' : ''
-                    }`}>
-                      {moodItem.name}
-                    </span>
+                    <span className="material-symbols-outlined text-sm">{moodItem.icon}</span>
+                    {moodItem.name}
                   </button>
                 );
               })}
             </div>
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider mb-2 block select-none">Rate your day</span>
-                <div className="rating-stars flex gap-1">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => {
-                    const isFilled = star <= (todayState.rating || 0);
-                    return (
-                      <span 
-                        key={star}
-                        className={`star ${isFilled ? 'filled' : ''}`}
-                        onClick={() => handleRatingSelect(star)}
-                      >
-                        ★
-                      </span>
-                    );
-                  })}
-                </div>
-                <div className="text-[10px] text-on-surface-variant mt-1 select-none">
-                  {getRatingLabel(todayState.rating || 0)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Rhythms */}
-        <div className="lg:col-span-4 bg-white/[0.05] backdrop-blur-[20px] border border-outline-variant/30 rounded-xl p-8 md:p-10 flex flex-col justify-between min-h-[360px] group transition-all duration-500 relative overflow-hidden bento-card">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-secondary/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-          
-          <div className="relative z-10">
-            <span className="font-label-caps text-label-caps text-secondary mb-8 block tracking-widest uppercase select-none">Rhythms</span>
-            <div className="flex flex-col gap-4">
-              {hobbies.length > 0 ? (
-                hobbies.map(hobby => {
-                  const isDone = tasks.some(t => t.cat === 'habit' && t.name === hobby.name && t.date === effectiveDateStr && t.done);
-                  const streak = getRhythmStreak(hobby.name);
-
-                  return (
-                    <div 
-                      key={hobby.id} 
-                      className="flex items-center gap-4 group cursor-pointer"
-                      onClick={() => toggleRhythm(hobby.name)}
-                    >
-                      <div className={`w-8 h-8 flex-shrink-0 rounded-full border border-secondary flex items-center justify-center transition-all ${
-                        isDone ? 'bg-secondary/10 shadow-[0_0_12px_rgba(230,193,131,0.2)]' : 'group-hover:bg-secondary/5'
-                      }`}>
-                        {isDone ? (
-                          <span className="material-symbols-outlined text-[16px] text-secondary">check</span>
-                        ) : (
-                          <span className="w-2 h-2 rounded-full bg-secondary/50"></span>
-                        )}
-                      </div>
-                      <span className={`font-body-md text-body-md transition-all ${
-                        isDone ? 'text-on-surface-variant line-through opacity-70' : 'text-on-surface group-hover:text-secondary'
-                      }`}>
-                        {hobby.name}
-                      </span>
-                      {streak > 0 && (
-                        <span className="text-[10px] text-secondary/80 font-label-caps flex items-center gap-0.5 select-none">
-                          <span className="material-symbols-outlined text-[12px]">local_fire_department</span>
-                          {streak}d
-                        </span>
-                      )}
-                      <button 
-                        className="ml-auto opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-red-400 transition-all p-1 cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteHobby(hobby.id, hobby.name);
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="empty-state text-center text-on-surface-variant italic text-sm mt-4 select-none">
-                  <span className="material-symbols-outlined block text-3xl mb-2 opacity-50">eco</span>
-                  No rhythms yet.
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="relative z-10 mt-8 border-t border-white/10 pt-6">
-              <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider block mb-3 select-none">Add Rhythm</span>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newHobbyName}
-                  onChange={(e) => setNewHobbyName(e.target.value)}
-                  placeholder="e.g. Morning Stillness" 
-                  className="w-full bg-surface-container-high border border-outline-variant rounded-md text-sm p-2 text-on-surface focus:ring-secondary focus:border-secondary"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddHobby(); }}
-                />
-                <button 
-                  className="bg-secondary/10 border border-secondary/30 text-secondary px-4 py-2 rounded-md font-label-caps uppercase text-xs hover:bg-secondary/20 transition-colors cursor-pointer"
-                  onClick={handleAddHobby}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-        </div>
-      </section>
-
-
-      {/* Vitality & Consistency */}
-      <section className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
-          {/* Health Metrics (Vitality) */}
-          <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 bento-card">
-            <span className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase select-none">Vitality</span>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Steps */}
-              <div className="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
-                <div className="flex items-center gap-2 text-secondary select-none">
-                  <span className="material-symbols-outlined text-[18px]">directions_walk</span>
-                  <span className="font-label-caps text-[10px] uppercase tracking-wider">Steps</span>
-                </div>
-                <div className="text-xl font-h3 text-on-surface w-full p-0">
-                  {todayState.steps || '0'}
-                </div>
-                <ElasticSlider
-                  defaultValue={getHealthRaw('steps', todayState.steps)}
-                  startingValue={0}
-                  maxValue={10000}
-                  stepSize={100}
-                  isStepped={true}
-                  rangeColorClass="bg-secondary"
-                  onChange={(val) => handleHealthSlider('steps', val)}
-                  className="w-full mt-2"
-                />
-              </div>
-
-              {/* Water */}
-              <div className="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
-                <div className="flex items-center gap-2 text-blue-300 select-none">
-                  <span className="material-symbols-outlined text-[18px]">water_drop</span>
-                  <span className="font-label-caps text-[10px] uppercase tracking-wider">Water</span>
-                </div>
-                <div className="text-xl font-h3 text-on-surface w-full p-0">
-                  {todayState.water || '0L'}
-                </div>
-                <ElasticSlider
-                  defaultValue={getHealthRaw('water', todayState.water)}
-                  startingValue={0}
-                  maxValue={3}
-                  stepSize={0.1}
-                  isStepped={true}
-                  rangeColorClass="bg-blue-300"
-                  onChange={(val) => handleHealthSlider('water', val)}
-                  className="w-full mt-2"
-                />
-              </div>
-
-              {/* Sleep */}
-              <div className="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
-                <div className="flex items-center gap-2 text-purple-300 select-none">
-                  <span className="material-symbols-outlined text-[18px]">bedtime</span>
-                  <span className="font-label-caps text-[10px] uppercase tracking-wider">Sleep</span>
-                </div>
-                <div className="text-xl font-h3 text-on-surface w-full p-0">
-                  {todayState.sleep || '0h'}
-                </div>
-                <ElasticSlider
-                  defaultValue={getHealthRaw('sleep', todayState.sleep)}
-                  startingValue={0}
-                  maxValue={12}
-                  stepSize={0.25}
-                  isStepped={true}
-                  rangeColorClass="bg-purple-300"
-                  onChange={(val) => handleHealthSlider('sleep', val)}
-                  className="w-full mt-2"
-                />
-              </div>
-
-              {/* Exercise */}
-              <div className="bg-white/5 rounded-lg p-4 flex flex-col gap-2 border border-white/5">
-                <div className="flex items-center gap-2 text-green-300 select-none">
-                  <span className="material-symbols-outlined text-[18px]">fitness_center</span>
-                  <span className="font-label-caps text-[10px] uppercase tracking-wider">Exercise</span>
-                </div>
-                <div className="text-xl font-h3 text-on-surface w-full p-0">
-                  {todayState.exercise || '0m'}
-                </div>
-                <ElasticSlider
-                  defaultValue={getHealthRaw('exercise', todayState.exercise)}
-                  startingValue={0}
-                  maxValue={120}
-                  stepSize={5}
-                  isStepped={true}
-                  rangeColorClass="bg-green-300"
-                  onChange={(val) => handleHealthSlider('exercise', val)}
-                  className="w-full mt-2"
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Consistency */}
-          <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-6 justify-between flex-grow bento-card">
-            <span className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase select-none">Consistency</span>
-            <div className="flex items-center justify-center flex-col gap-2 flex-grow">
-              <div className="relative w-32 h-32 flex items-center justify-center">
-                <svg className="absolute inset-0 w-full h-full -rotate-90 text-secondary/10" viewBox="0 0 36 36">
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="2"></path>
-                  <path 
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                    fill="none" 
-                    stroke="#e6c183" 
-                    strokeDasharray={`${Math.min(100, getOverallStreak() * 10)}, 100`} 
-                    strokeDashoffset="0" 
-                    strokeWidth="2"
-                  ></path>
-                </svg>
-                <div className="flex flex-col items-center text-center select-none">
-                  <span className="font-h2 text-3xl text-on-surface">{getOverallStreak()}</span>
-                  <span className="font-label-caps text-[10px] text-on-surface-variant uppercase">Day Streak</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider select-none">Mindfulness</span>
-                <input 
-                  type="text" 
-                  value={todayState.mindfulness || '0 Minutes'} 
-                  onChange={(e) => {
-                    const updated = { ...todayState, mindfulness: e.target.value };
-                    setTodayState(updated);
-                    saveTodayStateAPI(updated);
-                  }}
-                  className="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0 focus:border-none" 
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-right">
-                <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider select-none">Goal</span>
-                <input 
-                  type="text" 
-                  value={todayState.mindGoal || '150 Minutes'} 
-                  onChange={(e) => {
-                    const updated = { ...todayState, mindGoal: e.target.value };
-                    setTodayState(updated);
-                    saveTodayStateAPI(updated);
-                  }}
-                  className="bg-transparent border-none text-xl font-h3 text-on-surface w-full p-0 focus:ring-0 focus:border-none text-right" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Digital Space & Consistency */}
-        <div className="lg:col-span-4 flex flex-col gap-gutter">
-          {/* Digital Space */}
-          <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col flex-shrink-0 bento-card">
-            <div className="flex items-center justify-between mb-6 select-none">
-              <span className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Digital Space</span>
-              <span className="text-xs text-on-surface-variant">{getSocialTimeFormatted(totalSocialTime)} Total</span>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {Object.values(SOCIAL_APPS).map((app) => {
-                const currentMins = socialData[app.key] || 0;
+          {/* Day Star Rating */}
+          <div className="lg:col-span-6 flex flex-col gap-2">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider select-none">
+              Rate your general alignment
+            </span>
+            <div className="flex items-center gap-1.5" onMouseLeave={() => setHoveredRating(0)}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => {
+                const isFilled = star <= (hoveredRating || todayState.rating || 0);
                 return (
-                  <div key={app.key} className="flex items-center gap-4">
-                    <div 
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ 
-                        backgroundColor: `${app.color}1a`, 
-                        border: `1px solid ${app.color}33`,
-                        color: app.color
-                      }}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">{app.icon}</span>
-                    </div>
-                    <div className="flex-grow flex flex-col">
-                      <div className="flex justify-between items-center mb-1 select-none">
-                        <span className="font-body-md text-sm text-on-surface">{app.name}</span>
-                        <span className="font-label-caps text-[10px] text-on-surface-variant">
-                          {getSocialTimeFormatted(currentMins)}
-                        </span>
-                      </div>
-                      <ElasticSlider
-                        defaultValue={currentMins}
-                        startingValue={0}
-                        maxValue={app.max}
-                        stepSize={1}
-                        isStepped={true}
-                        rangeColorStyle={{ backgroundColor: `${app.color}cc` }}
-                        onChange={(val) => handleSocialSlider(app.key, val)}
-                        className="w-full mt-1.5"
-                      />
-                    </div>
-                  </div>
+                  <span 
+                    key={star}
+                    className={`material-symbols-outlined text-2xl cursor-pointer transition-all duration-150 select-none ${
+                      isFilled ? 'text-secondary scale-110' : 'text-on-surface-variant/50 hover:scale-125'
+                    }`}
+                    style={{ fontVariationSettings: isFilled ? "'FILL' 1" : "'FILL' 0" }}
+                    onClick={() => handleRatingSelect(star)}
+                    onMouseEnter={() => setHoveredRating(star)}
+                  >
+                    star
+                  </span>
                 );
               })}
             </div>
-            
-            {/* Visual Ring for Digital Space */}
-            <div className="flex items-center gap-6 border-t border-white/5 mt-6 pt-6 select-none">
-              <div className="relative w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center">
-                <svg className="absolute inset-0 w-full h-full -rotate-90 text-stone-850" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6"></circle>
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="42" 
-                    fill="none" 
-                    stroke="#e6c183" 
-                    strokeWidth="6" 
-                    strokeDasharray="264" 
-                    strokeDashoffset={strokeOffset}
-                    style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
-                  ></circle>
-                </svg>
-                <span className="text-xs font-semibold text-stone-200">{totalSocialHours}h</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-stone-500 uppercase tracking-widest">Goal Limit</span>
-                <span className="text-sm text-stone-300 font-newsreader italic">6.0 hrs / day</span>
-              </div>
-            </div>
+          </div>
+        </div>
+
+        {/* Check-In Sliders */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 border-t border-outline/50 pt-6">
+          {/* Energy */}
+          <div className="flex flex-col gap-1">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Energy: {parseFloat(todayState.energy || 5).toFixed(1)}</span>
+            <ElasticSlider
+              defaultValue={parseFloat(todayState.energy || 5)}
+              startingValue={1}
+              maxValue={10}
+              stepSize={0.5}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => handleStateSliderChange('energy', val)}
+            />
           </div>
 
+          {/* Focus */}
+          <div className="flex flex-col gap-1">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Focus: {parseFloat(todayState.focus || 5).toFixed(1)}</span>
+            <ElasticSlider
+              defaultValue={parseFloat(todayState.focus || 5)}
+              startingValue={1}
+              maxValue={10}
+              stepSize={0.5}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => handleStateSliderChange('focus', val)}
+            />
+          </div>
 
+          {/* Stress */}
+          <div className="flex flex-col gap-1">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Stress: {parseInt(todayState.stress || 0)}</span>
+            <ElasticSlider
+              defaultValue={parseInt(todayState.stress || 0)}
+              startingValue={0}
+              maxValue={10}
+              stepSize={1}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => handleStateSliderChange('stress', val)}
+            />
+          </div>
+
+          {/* Sleep Quality */}
+          <div className="flex flex-col gap-1">
+            <span className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Sleep Quality: {extData.sleepQuality}/10</span>
+            <ElasticSlider
+              defaultValue={extData.sleepQuality}
+              startingValue={1}
+              maxValue={10}
+              stepSize={1}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => saveExtendedData({ sleepQuality: Math.round(val) })}
+            />
+          </div>
         </div>
       </section>
 
-      {/* Extra Inputs (Remarks, Gratitude, One Word) */}
-      <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-gutter">
-        <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-4 bento-card">
-          <label className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase select-none">Daily Remark</label>
-          <textarea 
-            value={todayState.remark || ''} 
-            onChange={(e) => {
-              const updated = { ...todayState, remark: e.target.value };
-              setTodayState(updated);
-              saveTodayStateAPI(updated);
-            }}
-            placeholder="Capture a passing thought, event reflection, or a quiet realization..." 
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-on-surface focus:border-secondary h-28 resize-none text-sm leading-relaxed"
+      {/* SECTION 3: LIFE RING & DIMENSIONS DETAIL */}
+      <section className="life-ring-section">
+        
+        {/* Left column: SVG Ring — compact, breathing room */}
+        <div className="life-ring-column">
+          <LifeRing 
+            ratings={{
+              mind: extData.mind,
+              health: extData.health,
+              learning: extData.learning,
+              work: extData.work,
+              relationships: extData.relationships,
+              finance: extData.finance
+            }} 
+            activeSegment={activeSegment}
+            onSelectSegment={(seg) => setActiveSegment(seg)}
           />
         </div>
 
-        <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-4 bento-card">
-          <label className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase select-none">Gratitude</label>
+        {/* Right column: Premium Detail Panel */}
+        <div className="dimension-detail-panel">
+          {/* Segment Title + Description */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span 
+                className="material-symbols-outlined text-[18px]"
+                style={{ color: segmentAccents[activeSegment] }}
+              >
+                {dimensionsMap[activeSegment]?.icon}
+              </span>
+              <span 
+                className="font-sans text-[9px] tracking-[0.15em] uppercase font-semibold"
+                style={{ color: segmentAccents[activeSegment] }}
+              >
+                {activeSegment}
+              </span>
+            </div>
+            <h2 className="font-newsreader text-2xl text-on-surface leading-tight">
+              {dimensionsMap[activeSegment]?.title}
+            </h2>
+            <p className="font-sans text-[11px] text-on-surface-variant leading-relaxed">
+              {dimensionsMap[activeSegment]?.desc}
+            </p>
+          </div>
+
+          {/* Inline Dimension Rating — minimal, not a progress bar */}
+          <div className="dimension-rating-inline">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[9px] text-on-surface-variant uppercase tracking-wider">Dimension Rating</span>
+              <span 
+                className="font-newsreader text-lg font-semibold"
+                style={{ color: segmentAccents[activeSegment] }}
+              >
+                {extData[activeSegment]}<span className="text-on-surface-variant text-xs font-sans font-normal"> /10</span>
+              </span>
+            </div>
+            <ElasticSlider
+              defaultValue={extData[activeSegment]}
+              startingValue={1}
+              maxValue={10}
+              stepSize={1}
+              isStepped={true}
+              rangeColorClass="bg-secondary"
+              onChange={(val) => saveExtendedData({ [activeSegment]: Math.round(val) })}
+            />
+          </div>
+
+          {/* Segment-specific content */}
+          <div className="dimension-content-area">
+            {dimensionsMap[activeSegment]?.questions}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4 & 5: FOCUS TODAY & TIMELINE EVENTS */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Focus Today (Top 3 priorities) */}
+        <div className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-sm">
+          <div className="flex flex-col gap-1 mb-6">
+            <span className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase">
+              Focus Today
+            </span>
+            <h2 className="font-newsreader text-2xl text-on-surface">Main Priorities</h2>
+          </div>
+
+          <div className="flex flex-col gap-3 flex-grow">
+            {todayPriorities.length > 0 ? (
+              todayPriorities.map((item) => (
+                <div 
+                  key={item.id}
+                  className="p-4 border border-outline bg-surface-container-low/20 rounded-xl flex items-center gap-4 hover:bg-surface-container-high/20 transition-all duration-300"
+                >
+                  <input 
+                    type="checkbox"
+                    checked={item.done}
+                    onChange={() => handleToggleTask(item.id, item.done)}
+                    className="w-5 h-5 rounded border-outline bg-transparent text-secondary focus:ring-secondary focus:ring-offset-0 transition-all cursor-pointer flex-shrink-0"
+                  />
+                  <div className="flex-grow">
+                    <div className={`text-sm font-semibold transition-all ${
+                      item.done ? 'text-on-surface-variant line-through opacity-70' : 'text-on-surface'
+                    }`}>
+                      {item.name}
+                    </div>
+                    {item.notes && (
+                      <div className="text-xs text-on-surface-variant italic mt-1">{item.notes}</div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-on-surface-variant text-sm py-10 italic select-none">
+                Nothing planned today. Consider planning something meaningful.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Upcoming Events (Timeline) */}
+        <div className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-sm">
+          <div className="flex flex-col gap-1 mb-6">
+            <span className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase">
+              Upcoming Events
+            </span>
+            <h2 className="font-newsreader text-2xl text-on-surface">Today's Timeline</h2>
+          </div>
+
+          <div className="flex flex-col gap-3 flex-grow justify-center">
+            {todayEvents.length > 0 ? (
+              todayEvents.map((item) => (
+                <div 
+                  key={item.id}
+                  className="p-4 border border-outline bg-surface-container-low/20 rounded-xl flex items-center gap-4 hover:bg-surface-container-high/20 transition-all duration-300"
+                >
+                  <div className="w-8 h-8 rounded-full bg-secondary/15 flex items-center justify-center text-secondary select-none flex-shrink-0">
+                    <span className="material-symbols-outlined text-[16px]">schedule</span>
+                  </div>
+                  <div className="flex-grow">
+                    <div className="text-sm font-semibold text-on-surface">{item.name}</div>
+                    <div className="text-xs text-on-surface-variant mt-1 select-none">
+                      {item.time || 'No time set'}
+                    </div>
+                    {item.notes && (
+                      <div className="text-xs text-on-surface-variant italic mt-1">{item.notes}</div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-on-surface-variant text-sm py-10 italic select-none">
+                Nothing scheduled. Enjoy the space to reflect.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: DAILY REFLECTION */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col gap-4 shadow-sm">
+          <label className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase select-none">
+            Gratitude Card
+          </label>
+          <h2 className="font-newsreader text-2xl text-on-surface leading-tight mb-2">What made today meaningful?</h2>
           <textarea 
             value={todayState.gratitude || ''} 
             onChange={(e) => {
@@ -644,25 +848,105 @@ export default function TodayPage({
               saveTodayStateAPI(updated);
             }}
             placeholder="Write one thing you feel thankful for today..." 
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-on-surface focus:border-secondary h-28 resize-none text-sm leading-relaxed"
+            className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-4 text-on-surface focus:border-secondary h-32 resize-none text-sm leading-relaxed"
           />
         </div>
 
-        <div className="bg-white/[0.03] backdrop-blur-[20px] border border-outline-variant/20 rounded-xl p-6 flex flex-col gap-4 bento-card">
-          <label className="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase select-none">One Word</label>
-          <input 
-            type="text"
-            value={todayState.oneWord || ''} 
-            onChange={(e) => {
-              const updated = { ...todayState, oneWord: e.target.value };
-              setTodayState(updated);
-              saveTodayStateAPI(updated);
-            }}
-            placeholder="Today described in one word..." 
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-on-surface focus:border-secondary text-sm"
-          />
+        <div className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col gap-4 shadow-sm justify-between">
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase select-none">
+              Daily Realization
+            </label>
+            <h2 className="font-newsreader text-2xl text-on-surface leading-tight mb-2">One Word to describe today</h2>
+            <input 
+              type="text"
+              value={todayState.oneWord || ''} 
+              onChange={(e) => {
+                const updated = { ...todayState, oneWord: e.target.value };
+                setTodayState(updated);
+                saveTodayStateAPI(updated);
+              }}
+              placeholder="Stillness, alignment, focus..." 
+              className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-4 text-on-surface focus:border-secondary text-sm"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase select-none">
+              Daily Reflection
+            </label>
+            <textarea 
+              value={todayState.remark || ''} 
+              onChange={(e) => {
+                const updated = { ...todayState, remark: e.target.value };
+                setTodayState(updated);
+                saveTodayStateAPI(updated);
+              }}
+              placeholder="Capture a passing thought, event reflection, or a quiet realization..." 
+              className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-4 text-on-surface focus:border-secondary h-24 resize-none text-sm leading-relaxed"
+            />
+          </div>
         </div>
       </section>
+
+      {/* SECTION 7: WEEKLY REFLECTION */}
+      <section className="bg-surface border border-outline rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+        <div className="flex flex-col gap-1">
+          <span className="font-sans text-[10px] text-secondary font-semibold tracking-widest uppercase">
+            Weekly Alignment
+          </span>
+          <h2 className="font-newsreader text-2xl text-on-surface">Weekly Reflection</h2>
+          <p className="font-sans text-xs text-on-surface-variant italic">
+            Reflect weekly to review your life dimensions.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Well */}
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">What went well this week?</label>
+            <textarea
+              value={extData.weeklyWell || ''}
+              onChange={(e) => saveExtendedData({ weeklyWell: e.target.value })}
+              placeholder="Celebrate small alignments, connections, or learning moments..."
+              className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-3 text-on-surface focus:border-secondary h-28 resize-none text-xs leading-relaxed"
+            />
+          </div>
+
+          {/* Attention */}
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">What deserves more attention?</label>
+            <textarea
+              value={extData.weeklyAttention || ''}
+              onChange={(e) => saveExtendedData({ weeklyAttention: e.target.value })}
+              placeholder="Where did balance slip? How can you tend to it next week?"
+              className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-3 text-on-surface focus:border-secondary h-28 resize-none text-xs leading-relaxed"
+            />
+          </div>
+
+          {/* Balance */}
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">Where did you feel most balanced?</label>
+            <textarea
+              value={extData.weeklyBalance || ''}
+              onChange={(e) => saveExtendedData({ weeklyBalance: e.target.value })}
+              placeholder="Recognize the areas of life that flowed effortlessly..."
+              className="w-full bg-surface-container-high/30 border border-outline rounded-xl p-3 text-on-surface focus:border-secondary h-28 resize-none text-xs leading-relaxed"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Global Effortless Save Button */}
+      <div className="flex justify-end pt-4 select-none">
+        <button 
+          onClick={handleSaveTodayEntry}
+          className="bg-secondary text-white px-8 py-3.5 rounded-xl font-sans text-xs uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-sm cursor-pointer"
+        >
+          Save Today's Sanctuary Entry
+        </button>
+      </div>
+
     </div>
   );
 }

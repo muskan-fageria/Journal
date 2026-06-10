@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from 'framer-motion';
-
-const MAX_OVERFLOW = 50;
 
 export default function ElasticSlider({
   defaultValue = 50,
@@ -18,68 +15,46 @@ export default function ElasticSlider({
 }) {
   const [value, setValue] = useState(defaultValue);
   const sliderRef = useRef(null);
-  const [region, setRegion] = useState('middle');
-  const clientX = useMotionValue(0);
-  const overflow = useMotionValue(0);
-  const scale = useMotionValue(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
 
-  useMotionValueEvent(clientX, 'change', (latest) => {
-    if (sliderRef.current) {
-      const { left, right } = sliderRef.current.getBoundingClientRect();
-      let newValue;
+  const calculateValue = (clientX) => {
+    if (!sliderRef.current) return value;
+    const { left, width } = sliderRef.current.getBoundingClientRect();
+    if (width === 0) return value;
+    
+    let newValue = startingValue + ((clientX - left) / width) * (maxValue - startingValue);
+    newValue = Math.max(startingValue, Math.min(maxValue, newValue));
 
-      if (latest < left) {
-        setRegion('left');
-        newValue = left - latest;
-      } else if (latest > right) {
-        setRegion('right');
-        newValue = latest - right;
-      } else {
-        setRegion('middle');
-        newValue = 0;
-      }
-
-      overflow.jump(decay(newValue, MAX_OVERFLOW));
+    if (isStepped) {
+      newValue = Math.round(newValue / stepSize) * stepSize;
     }
-  });
-
-  const handlePointerMove = (e) => {
-    if (e.buttons > 0 && sliderRef.current) {
-      const { left, width } = sliderRef.current.getBoundingClientRect();
-      if (width === 0) return;
-      
-      let newValue = startingValue + ((e.clientX - left) / width) * (maxValue - startingValue);
-
-      if (isStepped) {
-        newValue = Math.round(newValue / stepSize) * stepSize;
-      }
-
-      newValue = Math.min(Math.max(newValue, startingValue), maxValue);
-      setValue(newValue);
-      
-      if (onChange) {
-        onChange(newValue);
-      }
-      
-      clientX.jump(e.clientX);
-    }
+    return newValue;
   };
 
   const handlePointerDown = (e) => {
-    handlePointerMove(e);
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch (err) {
-      console.warn("Pointer capture failed", err);
-    }
+    } catch (err) {}
+    setIsDragging(true);
+    const newValue = calculateValue(e.clientX);
+    setValue(newValue);
+    if (onChange) onChange(newValue);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const newValue = calculateValue(e.clientX);
+    setValue(newValue);
+    if (onChange) onChange(newValue);
   };
 
   const handlePointerUp = () => {
-    animate(overflow, 0, { type: 'spring', bounce: 0.5 });
+    setIsDragging(false);
   };
 
   const getRangePercentage = () => {
@@ -89,99 +64,51 @@ export default function ElasticSlider({
   };
 
   return (
-    <div className={`flex items-center w-full touch-none select-none gap-3 ${className}`}>
-      <motion.div
-        onHoverStart={() => animate(scale, 1.2)}
-        onHoverEnd={() => animate(scale, 1)}
-        onTouchStart={() => animate(scale, 1.2)}
-        onTouchEnd={() => animate(scale, 1)}
-        style={{
-          scale,
-          opacity: useTransform(scale, [1, 1.2], [0.8, 1])
-        }}
-        className="flex items-center w-full justify-center gap-3"
-      >
-        {/* Left Icon (if provided) */}
-        {leftIcon && (
-          <motion.div
-            animate={{
-              scale: region === 'left' ? [1, 1.4, 1] : 1,
-              transition: { duration: 0.25 }
-            }}
-            style={{
-              x: useTransform(() => (region === 'left' ? -overflow.get() / scale.get() : 0))
-            }}
-            className="flex items-center justify-center flex-shrink-0"
-          >
-            {leftIcon}
-          </motion.div>
-        )}
-
-        {/* Slider Track Area */}
-        <div
-          ref={sliderRef}
-          className="relative flex flex-grow h-8 cursor-grab active:cursor-grabbing items-center select-none touch-none"
-          onPointerMove={handlePointerMove}
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          onLostPointerCapture={handlePointerUp}
-        >
-          <motion.div
-            style={{
-              scaleX: useTransform(() => {
-                if (sliderRef.current) {
-                  const { width } = sliderRef.current.getBoundingClientRect();
-                  return width > 0 ? 1 + overflow.get() / width : 1;
-                }
-                return 1;
-              }),
-              scaleY: useTransform(overflow, [0, MAX_OVERFLOW], [1, 0.8]),
-              transformOrigin: useTransform(() => {
-                if (sliderRef.current) {
-                  const { left, width } = sliderRef.current.getBoundingClientRect();
-                  return clientX.get() < left + width / 2 ? 'right' : 'left';
-                }
-                return 'center';
-              }),
-              height: useTransform(scale, [1, 1.2], [6, 12]),
-              marginTop: useTransform(scale, [1, 1.2], [0, -3]),
-              marginBottom: useTransform(scale, [1, 1.2], [0, -3])
-            }}
-            className="flex flex-grow rounded-full overflow-hidden"
-          >
-            <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/10">
-              <div
-                className={`absolute h-full rounded-full ${rangeColorClass}`}
-                style={{ width: `${getRangePercentage()}%`, ...(rangeColorStyle || {}) }}
-              />
-            </div>
-          </motion.div>
+    <div className={`flex items-center w-full touch-none select-none gap-4 ${className}`}>
+      {/* Left Icon */}
+      {leftIcon && (
+        <div className={`flex items-center justify-center flex-shrink-0 transition-opacity duration-300 ${isHovered || isDragging ? 'opacity-100' : 'opacity-60'}`}>
+          {leftIcon}
         </div>
+      )}
 
-        {/* Right Icon (if provided) */}
-        {rightIcon && (
-          <motion.div
-            animate={{
-              scale: region === 'right' ? [1, 1.4, 1] : 1,
-              transition: { duration: 0.25 }
+      {/* Slider Track Area */}
+      <div
+        ref={sliderRef}
+        className="relative flex flex-grow h-6 cursor-pointer items-center group"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerEnter={() => setIsHovered(true)}
+        onPointerLeave={() => setIsHovered(false)}
+      >
+        {/* Track Background */}
+        <div className="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden relative">
+          {/* Track Fill */}
+          <div
+            className={`absolute top-0 left-0 h-full rounded-full ${rangeColorClass} transition-all`}
+            style={{ 
+              width: `${getRangePercentage()}%`, 
+              transitionDuration: isDragging ? '0ms' : '300ms',
+              ...(rangeColorStyle || {}) 
             }}
-            style={{
-              x: useTransform(() => (region === 'right' ? overflow.get() / scale.get() : 0))
-            }}
-            className="flex items-center justify-center flex-shrink-0"
-          >
-            {rightIcon}
-          </motion.div>
-        )}
-      </motion.div>
+          />
+        </div>
+        
+        {/* Thumb */}
+        <div 
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full shadow-sm transition-transform duration-200 pointer-events-none ${rangeColorClass} ${isDragging ? 'scale-125 shadow-md' : isHovered ? 'scale-100' : 'scale-0'}`}
+          style={{ left: `${getRangePercentage()}%`, ...(rangeColorStyle || {}) }}
+        />
+      </div>
+
+      {/* Right Icon */}
+      {rightIcon && (
+        <div className={`flex items-center justify-center flex-shrink-0 transition-opacity duration-300 ${isHovered || isDragging ? 'opacity-100' : 'opacity-60'}`}>
+          {rightIcon}
+        </div>
+      )}
     </div>
   );
-}
-
-function decay(value, max) {
-  if (max === 0) return 0;
-  const entry = value / max;
-  const sigmoid = 2 * (1 / (1 + Math.exp(-entry)) - 0.5);
-  return sigmoid * max;
 }

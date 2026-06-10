@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import Sidebar from './components/Sidebar';
 import TodayPage from './pages/TodayPage';
 import GrowthPage from './pages/GrowthPage';
-import ArchivePage from './pages/ArchivePage';
+import GoalsPage from './pages/GoalsPage';
 import MemoryPage from './pages/MemoryPage';
 import DiaryPage from './pages/DiaryPage';
 import LoginPage from './pages/LoginPage';
@@ -46,7 +46,7 @@ export default function App() {
       .select('*')
       .eq('id', userId)
       .single();
-    
+
     if (data) setUserProfile(data);
     else if (error) console.error("Error fetching profile:", error);
   };
@@ -55,7 +55,7 @@ export default function App() {
     await supabase.auth.signOut();
     setCurrentPage('today');
   };
-  
+
   // Data states
   const [todayState, setTodayState] = useState({
     mood: '',
@@ -200,7 +200,7 @@ export default function App() {
     if (showSplash) {
       const video = document.getElementById('intro-video');
       const skipBtn = document.getElementById('skip-intro');
-      
+
       if (skipBtn) {
         gsap.to(skipBtn, { opacity: 1, duration: 1, delay: 1 });
       }
@@ -262,7 +262,7 @@ export default function App() {
   // Page fade transitions effect
   useEffect(() => {
     // Quick GSAP reveal on page change
-    gsap.fromTo(".page", 
+    gsap.fromTo(".page",
       { opacity: 0, y: 15 },
       { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
     );
@@ -292,7 +292,7 @@ export default function App() {
   const formatDateStrDisplay = () => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June', 
+      'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const d = getEffectiveDate();
@@ -303,13 +303,13 @@ export default function App() {
     if (!entries || entries.length === 0) return 0;
     const sortedDates = [...new Set(entries.map(e => e.date))].sort().reverse();
     const todayStr = getEffectiveDateStr();
-    
+
     const yesterday = getEffectiveDate();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
+
     if (sortedDates[0] !== todayStr && sortedDates[0] !== yesterdayStr) return 0;
-    
+
     let streak = 1;
     let current = new Date(sortedDates[0] + 'T12:00:00');
     for (let i = 1; i < sortedDates.length; i++) {
@@ -341,7 +341,7 @@ export default function App() {
   const handleSaveTodayEntry = async () => {
     // Archive current todayState into entries table
     const doneTasks = tasks.filter(t => t.done && t.date === effectiveDateStr && t.cat !== 'habit').map(t => t.name);
-    
+
     const entry = {
       date: effectiveDateStr,
       dateStr: dateStrDisplay,
@@ -367,7 +367,7 @@ export default function App() {
         body: JSON.stringify(entry)
       });
       const data = await res.json();
-      
+
       // Update state
       const existingIdx = entries.findIndex(e => e.date === effectiveDateStr);
       if (existingIdx !== -1) {
@@ -377,7 +377,7 @@ export default function App() {
       } else {
         setEntries([data, ...entries]);
       }
-      
+
       triggerToast("Entry saved to Archive! ✨");
     } catch (err) {
       console.error(err);
@@ -389,18 +389,7 @@ export default function App() {
 
   return (
     <>
-      {/* Background */}
-      <div className="fixed inset-0 z-[-1] pointer-events-none select-none app-background">
-        {theme === 'default' && (
-          <>
-            <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2070&auto=format&fit=crop')" }}
-            ></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background"></div>
-          </>
-        )}
-      </div>
+      {/* Background is handled by index.css body gradient and noise */}
 
       {/* Premium Glassmorphic Loading Screen */}
       {showLoadingScreen && (
@@ -434,8 +423,8 @@ export default function App() {
           <video id="intro-video" className="w-full h-full object-cover" muted playsInline>
             <source src="/loading-video.mp4" type="video/mp4" />
           </video>
-          <button 
-            id="skip-intro" 
+          <button
+            id="skip-intro"
             className="absolute bottom-8 right-8 font-label-caps text-[10px] text-white/20 hover:text-white/60 uppercase tracking-[0.4em] transition-all opacity-0 cursor-pointer"
           >
             Skip
@@ -448,9 +437,9 @@ export default function App() {
       ) : (
         <>
           {/* Sidebar Navigation */}
-          <Sidebar 
-            currentPage={currentPage} 
-            setCurrentPage={setCurrentPage} 
+          <Sidebar
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
             todayState={todayState}
             tasks={tasks}
             dateStr={dateStrDisplay}
@@ -459,82 +448,89 @@ export default function App() {
 
           {/* Main Content Pane */}
           <main className="md:ml-64 min-h-screen flex flex-col p-margin-page lg:p-section-gap gap-section-gap max-w-none pt-8 select-none">
-        
-        {currentPage === 'today' && (
-          <TodayPage 
-            todayState={todayState}
-            setTodayState={setTodayState}
-            hobbies={hobbies}
-            setHobbies={setHobbies}
-            tasks={tasks}
-            setTasks={setTasks}
-            socialData={socialData}
-            setSocialData={setSocialData}
-            dateStr={dateStrDisplay}
-            effectiveDateStr={effectiveDateStr}
-            toast={triggerToast}
-            saveTodayStateAPI={saveTodayStateAPI}
-            saveSocialAPI={saveSocialAPI}
-            userProfile={augmentedUserProfile}
-          />
-        )}
 
-        {currentPage === 'growth' && (
-          <GrowthPage 
-            tasks={tasks}
-            setTasks={setTasks}
-            projects={projects}
-            setProjects={setProjects}
-            events={events}
-            setEvents={setEvents}
-            effectiveDateStr={effectiveDateStr}
-            toast={triggerToast}
-          />
-        )}
+            {currentPage === 'today' && (
+              <TodayPage
+                todayState={todayState}
+                setTodayState={setTodayState}
+                hobbies={hobbies}
+                setHobbies={setHobbies}
+                tasks={tasks}
+                setTasks={setTasks}
+                socialData={socialData}
+                setSocialData={setSocialData}
+                dateStr={dateStrDisplay}
+                effectiveDateStr={effectiveDateStr}
+                toast={triggerToast}
+                saveTodayStateAPI={saveTodayStateAPI}
+                saveSocialAPI={saveSocialAPI}
+                userProfile={augmentedUserProfile}
+                handleSaveTodayEntry={handleSaveTodayEntry}
+              />
+            )}
 
-        {currentPage === 'archive' && (
-          <ArchivePage 
-            entries={entries}
-            toast={triggerToast}
-          />
-        )}
+            {currentPage === 'calendar' && (
+              <GrowthPage
+                tasks={tasks}
+                setTasks={setTasks}
+                projects={projects}
+                setProjects={setProjects}
+                events={events}
+                setEvents={setEvents}
+                effectiveDateStr={effectiveDateStr}
+                toast={triggerToast}
+              />
+            )}
 
-        {currentPage === 'memory' && (
-          <MemoryPage 
-            memories={memories}
-            setMemories={setMemories}
-            toast={triggerToast}
-          />
-        )}
+            {currentPage === 'journal' && (
+              <DiaryPage
+                entries={entries}
+                setEntries={setEntries}
+                toast={triggerToast}
+                effectiveDateStr={effectiveDateStr}
+                dateStr={dateStrDisplay}
+              />
+            )}
 
-        {currentPage === 'diary' && (
-          <DiaryPage 
-            toast={triggerToast}
-          />
-        )}
+            {currentPage === 'goals' && (
+              <GoalsPage
+                projects={projects}
+                setProjects={setProjects}
+                effectiveDateStr={effectiveDateStr}
+                toast={triggerToast}
+              />
+            )}
 
-        {currentPage === 'profile' && (
-          <ProfilePage 
-            onLogout={handleLogout}
-            userProfile={augmentedUserProfile}
-            theme={theme}
-            setTheme={setTheme}
-          />
-        )}
+            {currentPage === 'memory' && (
+              <MemoryPage
+                memories={memories}
+                setMemories={setMemories}
+                toast={triggerToast}
+              />
+            )}
 
-        {/* Global Save Button for Today View */}
-        {currentPage === 'today' && (
-          <div className="flex justify-end border-t border-white/5 pt-8 mt-4 select-none">
-            <button 
-              onClick={handleSaveTodayEntry}
-              className="bg-secondary text-stone-900 px-8 py-3.5 rounded-xl font-label-caps text-xs uppercase tracking-widest hover:bg-white hover:scale-[1.02] active:scale-95 transition-all shadow-lg cursor-pointer"
-            >
-              Save Today's Sanctuary Entry
-            </button>
-          </div>
-        )}
-      </main>
-      </>
+            {currentPage === 'profile' && (
+              <ProfilePage
+                onLogout={handleLogout}
+                userProfile={augmentedUserProfile}
+                theme={theme}
+                setTheme={setTheme}
+              />
+            )}
+
+            {/* Global Save Button for Today View */}
+            {currentPage === 'today' && (
+              <div className="flex justify-end border-t border-white/5 pt-8 mt-4 select-none">
+                <button
+                  onClick={handleSaveTodayEntry}
+                  className="bg-secondary text-stone-900 px-8 py-3.5 rounded-xl font-label-caps text-xs uppercase tracking-widest hover:bg-white hover:scale-[1.02] active:scale-95 transition-all shadow-lg cursor-pointer"
+                >
+                  Save Today's Sanctuary Entry
+                </button>
+              </div>
+            )}
+          </main>
+        </>
       )}
 
       {/* Toast Notification HUD */}

@@ -84,20 +84,26 @@ export default function ProfilePage({ onLogout, userProfile, theme, setTheme }) 
           <div className="bg-[#1a1c1a]/90 backdrop-blur-md rounded-2xl border border-white/5 p-6 flex flex-col gap-4 shadow-xl">
              <h3 className="font-newsreader text-2xl text-stone-200">Theme Preference</h3>
              <p className="font-sans text-sm text-stone-400">Customize the look and feel of your sanctuary.</p>
-             <div className="flex flex-wrap gap-4 mt-2">
-                <button 
-                  onClick={() => setTheme && setTheme('default')} 
-                  className={`px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'default' ? 'bg-secondary text-stone-900 border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
-                >
-                  Default
-                </button>
-                <button 
-                  onClick={() => setTheme && setTheme('primary')} 
-                  className={`px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'primary' ? 'bg-secondary text-stone-900 border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
-                >
-                  Primary Theme
-                </button>
-             </div>
+              <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                <div className="flex flex-col gap-2 flex-1">
+                  <button 
+                    onClick={() => setTheme && setTheme('default')} 
+                    className={`w-full px-6 py-4 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'default' ? 'bg-secondary text-on-surface border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
+                  >
+                    Life Mode
+                  </button>
+                  <span className="text-[10px] text-stone-500 text-center uppercase tracking-widest">Warm & paper-like — daily use</span>
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <button 
+                    onClick={() => setTheme && setTheme('primary')} 
+                    className={`w-full px-6 py-4 rounded-xl text-xs uppercase tracking-widest font-label-caps border transition-all ${theme === 'primary' ? 'bg-secondary text-on-surface border-secondary shadow-[0_0_15px_rgba(var(--color-secondary-rgb),0.3)]' : 'border-white/10 text-stone-400 hover:bg-white/5 hover:border-white/20'}`}
+                  >
+                    Sanctuary Mode
+                  </button>
+                  <span className="text-[10px] text-stone-500 text-center uppercase tracking-widest">Dark & reflective — evening journaling</span>
+                </div>
+              </div>
           </div>
 
           {/* Subscription Plan */}
